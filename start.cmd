@@ -1,5 +1,5 @@
 @echo off
-TITLE PocketMine-MP server software for Minecraft: Bedrock Edition
+TITLE Redstone-MP server software for Minecraft: Bedrock Edition
 cd /d %~dp0
 
 set PHP_BINARY=

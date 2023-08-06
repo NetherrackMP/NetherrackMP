@@ -39,6 +39,9 @@ class GamemodeCommand extends VanillaCommand{
 			KnownTranslationFactory::pocketmine_command_gamemode_description(),
 			KnownTranslationFactory::commands_gamemode_usage()
 		);
+		$this->setAliases([
+			"gm"
+		]);
 		$this->setPermissions([
 			DefaultPermissionNames::COMMAND_GAMEMODE_SELF,
 			DefaultPermissionNames::COMMAND_GAMEMODE_OTHER

@@ -21,8 +21,10 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\aggressive;
 
+use pocketmine\entity\EntitySizeInfo;
+use pocketmine\entity\Living;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use function mt_rand;

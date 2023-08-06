@@ -89,7 +89,6 @@ abstract class PluginBase implements Plugin, CommandExecutor{
 	 * Called when the plugin is enabled
 	 */
 	protected function onEnable() : void{
-
 	}
 
 	/**
