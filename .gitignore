@@ -5,7 +5,7 @@ world_conversion_backups/*
 backups/*
 plugin_data/*
 plugins/*
-bin*/*
+tests/TestServer/bin/*
 timings/*
 crashdumps/*
 *.log
