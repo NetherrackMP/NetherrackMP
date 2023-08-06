@@ -5,7 +5,7 @@
 		<![endif]-->
 		<picture>
 			<source srcset="https://media.discordapp.net/attachments/1137661880404545536/1137772152112808046/file.png?" media="(prefers-color-scheme: dark)">
-			<img src="[https://raw.githubusercontent.com/pmmp/PocketMine-MP/stable/.github/readme/pocketmine-rgb.gif](https://media.discordapp.net/attachments/1137661880404545536/1137763039794434068/image.png?width=80&height=80)" loading="eager" />
+			<img src="[](https://media.discordapp.net/attachments/1137661880404545536/1137763039794434068/image.png?width=80&height=80)" loading="eager" />
 		</picture>
 	</a><br>
 	<b>NetherrackMP, an advanced software designed for managing Minecraft: Bedrock Edition servers. It is a fork of Pocketmine-MP with enhanced features and improvements.
