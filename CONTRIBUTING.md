@@ -4,7 +4,7 @@
 
 PocketMine-MP is an open source project, and contributions from the community are welcomed, as long as they comply with our quality standards and licensing.
 
-Code contributions must be submitted using [GitHub Pull Requests](https://github.com/pmmp/PocketMine-MP/pulls), where they will be reviewed by maintainers.
+Code contributions must be submitted using [GitHub Pull Requests](https://github.com/NetherrackMP/NetherrackMP/pulls), where they will be reviewed by maintainers.
 
 Small contributions (e.g. minor bug fixes) can be submitted as pull requests directly.
 
@@ -73,10 +73,10 @@ PocketMine-MP has three primary branches of development.
 
 ## Making a pull request
 The basic procedure to create a pull request is:
-1. [Fork the repository on GitHub](https://github.com/pmmp/PocketMine-MP/fork). This gives you your own copy of the repository to make changes to.
+1. [Fork the repository on GitHub](https://github.com/NetherrackMP/NetherrackMP/fork). This gives you your own copy of the repository to make changes to.
 2. Create a branch on your fork for your changes.
 3. Make the changes you want to make on this branch.
-4. You can then make a [pull request](https://github.com/pmmp/PocketMine-MP/pull/new) to the project.
+4. You can then make a [pull request](https://github.com/NetherrackMP/NetherrackMP/pull/new) to the project.
 
 ## Pull request reviews
 Pull requests will be reviewed by maintainers when they are available.

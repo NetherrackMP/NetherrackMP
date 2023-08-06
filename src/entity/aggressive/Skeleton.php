@@ -2,7 +2,7 @@
 
 namespace pocketmine\entity\aggressive;
 
-use pocketmine\entity\EntityIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\entity\EntitySizeInfo;
 use pocketmine\entity\Living;
 use pocketmine\item\enchantment\EnchantmentInstance;

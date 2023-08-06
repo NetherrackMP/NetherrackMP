@@ -70,7 +70,7 @@ class EnchantCommand extends VanillaCommand{
 
 		$level = 1;
 		if(isset($args[2])){
-			$level = $this->getBoundedInt($sender, $args[2], 1, $enchantment->getMaxLevel());
+			$level = $this->getBoundedInt($sender, $args[2], 1, 255);
 			if($level === null){
 				return false;
 			}

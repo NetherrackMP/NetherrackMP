@@ -7,29 +7,29 @@ use pocketmine\entity\Living;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 
-class Cow extends Living
+class Chicken extends Living
 {
 
 	protected function getInitialSizeInfo(): EntitySizeInfo
 	{
-		return new EntitySizeInfo(1.4, 0.9);
+		return new EntitySizeInfo(0.7, 0.4);
 	}
 
 	public static function getNetworkTypeId(): string
 	{
-		return EntityIds::COW;
+		return EntityIds::CHICKEN;
 	}
 
 	public function getName(): string
 	{
-		return 'Cow';
+		return 'Chicken';
 	}
 
 	public function getDrops(): array
 	{
 		$items = [
-			VanillaItems::RAW_BEEF()->setCount(mt_rand(1, 3)),
-			VanillaItems::LEATHER()->setCount(mt_rand(1, 3))
+			VanillaItems::RAW_CHICKEN()->setCount(mt_rand(1, 3)),
+			VanillaItems::FEATHER()->setCount(mt_rand(0, 2))
 		];
 
 		return $items;
@@ -37,6 +37,6 @@ class Cow extends Living
 
 	public function getXpDropAmount(): int
 	{
-		return mt_rand(1, 4);
+		return mt_rand(1, 3);
 	}
 }

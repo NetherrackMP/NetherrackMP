@@ -29,6 +29,7 @@ use pocketmine\block\VanillaBlocks as Blocks;
 use pocketmine\entity\aggressive\Zombie;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Location;
+use pocketmine\entity\mob\Sheep;
 use pocketmine\entity\Squid;
 use pocketmine\entity\Villager;
 use pocketmine\inventory\ArmorInventory;
@@ -297,6 +298,7 @@ use pocketmine\world\World;
  * @method static Totem TOTEM()
  * @method static TurtleHelmet TURTLE_HELMET()
  * @method static SpawnEgg VILLAGER_SPAWN_EGG()
+ * @method static SpawnEgg SHEEP_SPAWN_EGG()
  * @method static ItemBlockWallOrFloor WARPED_SIGN()
  * @method static LiquidBucket WATER_BUCKET()
  * @method static Item WHEAT()
@@ -572,6 +574,12 @@ final class VanillaItems{
 		self::register("villager_spawn_egg", new class(new IID(Ids::VILLAGER_SPAWN_EGG), "Villager Spawn Egg") extends SpawnEgg{
 			public function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch) : Entity{
 				return new Villager(Location::fromObject($pos, $world, $yaw, $pitch));
+			}
+		});
+		self::register("sheep_spawn_egg", new class(new IID(Ids::SHEEP_SPAWN_EGG), "Sheep Spawn Egg") extends SpawnEgg{
+			public function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch): Entity
+			{
+				return new Sheep(Location::fromObject($pos, $world, $yaw, $pitch));
 			}
 		});
 	}

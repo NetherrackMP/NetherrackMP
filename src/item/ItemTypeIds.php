@@ -306,6 +306,8 @@ final class ItemTypeIds{
 
 	public const FIRST_UNUSED_ITEM_ID = 20267;
 
+	public const SHEEP_SPAWN_EGG = 20268;
+
 	private static int $nextDynamicId = self::FIRST_UNUSED_ITEM_ID;
 
 	/**
