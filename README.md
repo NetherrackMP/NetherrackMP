@@ -57,6 +57,6 @@
   - **End and nether** portals
   - Vanilla **world generation**
   - **Every mob** in MC:BE
--** Default AntiCheat** for: Nuke, FastBreak, Fly, Crasher
+- **Default AntiCheat** for: Nuke, FastBreak, Fly, Crasher
 - Built-in DevTools
 
