@@ -20,10 +20,10 @@ require dirname(__DIR__, 2) . '/vendor/autoload.php';
  */
 function generateDiscordEmbed(string $version, string $channel, string $description, string $detailsUrl, string $sourceUrl, string $pharDownloadUrl, string $buildLogUrl, int $newsPingRoleId) : array{
 	return [
-		"content" => "<@&$newsPingRoleId> New PocketMine-MP release: $version ($channel)",
+		"content" => "<@&$newsPingRoleId> New Netherrack-MP release: $version ($channel)",
 		"embeds" => [
 			[
-				"title" => "New PocketMine-MP release: $version ($channel)",
+				"title" => "New Netherrack-MP release: $version ($channel)",
 				"description" => <<<DESCRIPTION
 $description
 

@@ -861,7 +861,7 @@ class Server{
 					$this->logger->emergency($this->language->translate(KnownTranslationFactory::pocketmine_server_devBuild_error2()));
 					$this->logger->emergency($this->language->translate(KnownTranslationFactory::pocketmine_server_devBuild_error3()));
 					$this->logger->emergency($this->language->translate(KnownTranslationFactory::pocketmine_server_devBuild_error4("settings.enable-dev-builds")));
-					$this->logger->emergency($this->language->translate(KnownTranslationFactory::pocketmine_server_devBuild_error5("https://github.com/pmmp/PocketMine-MP/releases")));
+					$this->logger->emergency($this->language->translate(KnownTranslationFactory::pocketmine_server_devBuild_error5("https://github.com/NetherrackMP/NetherrackMP/releases")));
 					$this->forceShutdownExit();
 
 					return;
@@ -1049,7 +1049,7 @@ class Server{
 			$this->configGroup->save();
 
 			$this->logger->info($this->getLanguage()->translate(KnownTranslationFactory::pocketmine_server_defaultGameMode($this->getGamemode()->getTranslatableName())));
-			$this->logger->info($this->getLanguage()->translate(KnownTranslationFactory::pocketmine_server_donate(TextFormat::AQUA . "https://patreon.com/pocketminemp" . TextFormat::RESET)));
+			//$this->logger->info($this->getLanguage()->translate(KnownTranslationFactory::pocketmine_server_donate(TextFormat::AQUA . "https://patreon.com/pocketminemp" . TextFormat::RESET)));
 			$this->logger->info($this->getLanguage()->translate(KnownTranslationFactory::pocketmine_server_startFinished(strval(round(microtime(true) - $this->startTime, 3)))));
 
 			$forwarder = new BroadcastLoggerForwarder($this, $this->logger, $this->language);

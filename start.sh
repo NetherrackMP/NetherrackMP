@@ -33,11 +33,11 @@ if [ "$PHP_BINARY" == "" ]; then
 fi
 
 if [ "$POCKETMINE_FILE" == "" ]; then
-	if [ -f ./PocketMine-MP.phar ]; then
-		POCKETMINE_FILE="./PocketMine-MP.phar"
+	if [ -f ./Netherrack-MP.phar ]; then
+		POCKETMINE_FILE="./Netherrack-MP.phar"
 	else
-		echo "PocketMine-MP.phar not found"
-		echo "Downloads can be found at https://github.com/pmmp/PocketMine-MP/releases"
+		echo "Netherrack-MP.phar not found"
+		echo "Downloads can be found at https://github.com/NetherrackMP/NetherrackMP/releases"
 		exit 1
 	fi
 fi
