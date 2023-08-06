@@ -67,6 +67,6 @@ final class Translatable{
 	}
 
 	public function postfix(string $postfix) : self{
-		return new self("%$this->text" . $postfix);
+		return new self("%$this->text$postfix", $this->params);
 	}
 }

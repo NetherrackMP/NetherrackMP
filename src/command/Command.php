@@ -24,8 +24,10 @@ declare(strict_types=1);
 /**
  * Command handling related classes
  */
+
 namespace pocketmine\command;
 
+use InvalidArgumentException;
 use pocketmine\command\utils\CommandException;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\lang\Translatable;
@@ -37,24 +39,17 @@ use function explode;
 use function implode;
 use function str_replace;
 
-abstract class Command{
-
-	private string $name;
-
+abstract class Command
+{
 	private string $nextLabel;
 	private string $label;
 
 	/** @var string[] */
-	private array $aliases = [];
-
-	/** @var string[] */
-	private array $activeAliases = [];
+	private array $activeAliases;
 
 	private ?CommandMap $commandMap = null;
 
-	protected Translatable|string $description = "";
-
-	protected Translatable|string $usageMessage;
+	protected Translatable|string $usage;
 
 	/** @var string[] */
 	private array $permission = [];
@@ -63,183 +58,198 @@ abstract class Command{
 	/**
 	 * @param string[] $aliases
 	 */
-	public function __construct(string $name, Translatable|string $description = "", Translatable|string|null $usageMessage = null, array $aliases = []){
-		$this->name = $name;
-		$this->setLabel($name);
-		$this->setDescription($description);
-		$this->usageMessage = $usageMessage ?? ("/" . $name);
-		$this->setAliases($aliases);
+	public function __construct(
+		private readonly string       $name,
+		protected Translatable|string $description = "",
+		Translatable|string|null      $usage = "",
+		private array                 $aliases = []
+	)
+	{
+		$this->label = $name;
+		$this->nextLabel = $name;
+		$this->usage = $usage ?? "";
+		$this->activeAliases = $aliases;
 	}
 
 	/**
+	 * @param CommandSender $sender
+	 * @param string $commandLabel
 	 * @param string[] $args
 	 *
 	 * @return mixed
 	 * @throws CommandException
+	 * @noinspection PhpMissingReturnTypeInspection
 	 */
 	abstract public function execute(CommandSender $sender, string $commandLabel, array $args);
 
-	public function getName() : string{
+	public function getName(): string
+	{
 		return $this->name;
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getPermissions() : array{
+	public function getPermissions(): array
+	{
 		return $this->permission;
 	}
 
 	/**
 	 * @param string[] $permissions
 	 */
-	public function setPermissions(array $permissions) : void{
+	public function setPermissions(array $permissions): void
+	{
 		$permissionManager = PermissionManager::getInstance();
-		foreach($permissions as $perm){
-			if($permissionManager->getPermission($perm) === null){
-				throw new \InvalidArgumentException("Cannot use non-existing permission \"$perm\"");
+		foreach ($permissions as $perm) {
+			if ($permissionManager->getPermission($perm) === null) {
+				throw new InvalidArgumentException("Cannot use non-existing permission \"$perm\"");
 			}
 		}
 		$this->permission = $permissions;
 	}
 
-	public function setPermission(?string $permission) : void{
+	public function setPermission(?string $permission): void
+	{
 		$this->setPermissions($permission === null ? [] : explode(";", $permission));
 	}
 
-	public function testPermission(CommandSender $target, ?string $permission = null) : bool{
-		if($this->testPermissionSilent($target, $permission)){
-			return true;
-		}
-
-		if($this->permissionMessage === null){
+	public function testPermission(CommandSender $target, ?string $permission = null): bool
+	{
+		if ($this->testPermissionSilent($target, $permission)) return true;
+		if ($this->permissionMessage === null) {
 			$target->sendMessage(KnownTranslationFactory::pocketmine_command_error_permission($this->name)->prefix(TextFormat::RED));
-		}elseif($this->permissionMessage !== ""){
+		} elseif ($this->permissionMessage !== "") {
 			$target->sendMessage(str_replace("<permission>", $permission ?? implode(";", $this->permission), $this->permissionMessage));
 		}
-
 		return false;
 	}
 
-	public function testPermissionSilent(CommandSender $target, ?string $permission = null) : bool{
+	public function testPermissionSilent(CommandSender $target, ?string $permission = null): bool
+	{
 		$list = $permission !== null ? [$permission] : $this->permission;
-		foreach($list as $p){
-			if($target->hasPermission($p)){
-				return true;
-			}
-		}
-
+		foreach ($list as $p) if ($target->hasPermission($p)) return true;
 		return false;
 	}
 
-	public function getLabel() : string{
+	public function getLabel(): string
+	{
 		return $this->label;
 	}
 
-	public function setLabel(string $name) : bool{
+	public function setLabel(string $name): bool
+	{
 		$this->nextLabel = $name;
-		if(!$this->isRegistered()){
+		if (!$this->isRegistered()) {
 			$this->label = $name;
-
 			return true;
 		}
-
 		return false;
 	}
 
 	/**
 	 * Registers the command into a Command map
 	 */
-	public function register(CommandMap $commandMap) : bool{
-		if($this->allowChangesFrom($commandMap)){
+	public function register(CommandMap $commandMap): bool
+	{
+		if ($this->allowChangesFrom($commandMap)) {
 			$this->commandMap = $commandMap;
-
 			return true;
 		}
-
 		return false;
 	}
 
-	public function unregister(CommandMap $commandMap) : bool{
-		if($this->allowChangesFrom($commandMap)){
+	public function unregister(CommandMap $commandMap): bool
+	{
+		if ($this->allowChangesFrom($commandMap)) {
 			$this->commandMap = null;
 			$this->activeAliases = $this->aliases;
 			$this->label = $this->nextLabel;
-
 			return true;
 		}
-
 		return false;
 	}
 
-	private function allowChangesFrom(CommandMap $commandMap) : bool{
+	private function allowChangesFrom(CommandMap $commandMap): bool
+	{
 		return $this->commandMap === null || $this->commandMap === $commandMap;
 	}
 
-	public function isRegistered() : bool{
+	public function isRegistered(): bool
+	{
 		return $this->commandMap !== null;
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getAliases() : array{
+	public function getAliases(): array
+	{
 		return $this->activeAliases;
 	}
 
-	public function getPermissionMessage() : ?string{
+	public function getPermissionMessage(): ?string
+	{
 		return $this->permissionMessage;
 	}
 
-	public function getDescription() : Translatable|string{
+	public function getDescription(): Translatable|string
+	{
 		return $this->description;
 	}
 
-	public function getUsage() : Translatable|string{
-		return $this->usageMessage;
+	public function getUsage(): Translatable|string
+	{
+		return $this->usage;
 	}
 
 	/**
 	 * @param string[] $aliases
 	 */
-	public function setAliases(array $aliases) : void{
+	public function setAliases(array $aliases): void
+	{
 		$this->aliases = $aliases;
-		if(!$this->isRegistered()){
+		if (!$this->isRegistered()) {
 			$this->activeAliases = $aliases;
 		}
 	}
 
-	public function setDescription(Translatable|string $description) : void{
+	public function setDescription(Translatable|string $description): void
+	{
 		$this->description = $description;
 	}
 
-	public function setPermissionMessage(string $permissionMessage) : void{
+	public function setPermissionMessage(string $permissionMessage): void
+	{
 		$this->permissionMessage = $permissionMessage;
 	}
 
-	public function setUsage(Translatable|string $usage) : void{
-		$this->usageMessage = $usage;
+	public function setUsage(Translatable|string $usage): void
+	{
+		$this->usage = $usage;
 	}
 
-	public static function broadcastCommandMessage(CommandSender $source, Translatable|string $message, bool $sendToSource = true) : void{
+	public static function broadcastCommandMessage(CommandSender $source, Translatable|string $message, bool $sendToSource = true): void
+	{
 		$users = $source->getServer()->getBroadcastChannelSubscribers(Server::BROADCAST_CHANNEL_ADMINISTRATIVE);
 		$result = KnownTranslationFactory::chat_type_admin($source->getName(), $message);
 		$colored = $result->prefix(TextFormat::GRAY . TextFormat::ITALIC);
 
-		if($sendToSource){
+		if ($sendToSource) {
 			$source->sendMessage($message);
 		}
 
-		foreach($users as $user){
-			if($user instanceof BroadcastLoggerForwarder){
+		foreach ($users as $user) {
+			if ($user instanceof BroadcastLoggerForwarder) {
 				$user->sendMessage($result);
-			}elseif($user !== $source){
+			} elseif ($user !== $source) {
 				$user->sendMessage($colored);
 			}
 		}
 	}
 
-	public function __toString() : string{
+	public function __toString(): string
+	{
 		return $this->name;
 	}
 }
