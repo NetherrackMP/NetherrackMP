@@ -1,4 +1,4 @@
-# MC:BE Redstone-MP Software
+# MC:BE Netherrack-MP Software
 
 MC:BE Redstone is an advanced software designed for managing Minecraft: Bedrock Edition servers. It is a fork of Pocketmine-MP with enhanced features and improvements.
 

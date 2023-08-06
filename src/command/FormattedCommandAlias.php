@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\command;
 
+use InvalidArgumentException;
 use pocketmine\command\utils\CommandStringHelper;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
@@ -51,7 +52,7 @@ class FormattedCommandAlias extends Command{
 	 */
 	public function __construct(
 		string $alias,
-		private array $formatStrings
+		private readonly array $formatStrings
 	){
 		parent::__construct($alias, KnownTranslationFactory::pocketmine_command_userDefined_description());
 	}
@@ -71,13 +72,13 @@ class FormattedCommandAlias extends Command{
 						$unresolved[] = $formatArg;
 					}elseif(count($unresolved) !== 0){
 						//unresolved args are OK only if they are at the end of the string - we can't have holes in the args list
-						throw new \InvalidArgumentException("Unable to resolve format arguments (" . implode(", ", $unresolved) . ") in command string \"$formatString\" due to missing arguments");
+						throw new InvalidArgumentException("Unable to resolve format arguments (" . implode(", ", $unresolved) . ") in command string \"$formatString\" due to missing arguments");
 					}else{
 						$processedArgs[] = $processedArg;
 					}
 				}
 				$commands[] = $processedArgs;
-			}catch(\InvalidArgumentException $e){
+			}catch(InvalidArgumentException $e){
 				$sender->sendMessage(TextFormat::RED . $e->getMessage());
 				return false;
 			}
@@ -134,13 +135,13 @@ class FormattedCommandAlias extends Command{
 
 			$info = self::extractPlaceholderInfo($formatString, $index);
 			if($info === null){
-				throw new \InvalidArgumentException("Invalid replacement token");
+				throw new InvalidArgumentException("Invalid replacement token");
 			}
 			[$fullPlaceholder, $required, $position, $rest] = $info;
 			$position--; //array offsets start at 0, but placeholders start at 1
 
 			if($required && $position >= count($args)){
-				throw new \InvalidArgumentException("Missing required argument " . ($position + 1));
+				throw new InvalidArgumentException("Missing required argument " . ($position + 1));
 			}
 
 			$replacement = self::buildReplacement($args, $position, $rest);

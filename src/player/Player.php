@@ -1499,10 +1499,6 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 		$message = TextFormat::clean($message, false);
 		foreach(explode("\n", $message, $this->messageCounter + 1) as $messagePart){
 			if(trim($messagePart) !== "" && strlen($messagePart) <= self::MAX_CHAT_BYTE_LENGTH && mb_strlen($messagePart, 'UTF-8') <= self::MAX_CHAT_CHAR_LENGTH && $this->messageCounter-- > 0){
-				if(str_starts_with($messagePart, './')){
-					$messagePart = substr($messagePart, 1);
-				}
-
 				if(str_starts_with($messagePart, "/")){
 					Timings::$playerCommand->startTiming();
 					$this->server->dispatchCommand($this, substr($messagePart, 1));

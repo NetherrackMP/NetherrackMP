@@ -1,5 +1,5 @@
 @echo off
-TITLE PocketMine-MP server software for Minecraft: Bedrock Edition
+TITLE NetherrackMC server software for Minecraft: Bedrock Edition
 cd /d %~dp0
 
 set PHP_BINARY=
@@ -16,6 +16,7 @@ if exist bin\php\php.exe (
 )
 
 if "%PHP_BINARY%"=="" (
+	rem TODO: ask to automatically install the latest version?
 	echo Couldn't find a PHP binary in system PATH or "%~dp0bin\php"
 	echo Please refer to the installation instructions at https://doc.pmmp.io/en/rtfd/installation.html
 	pause
@@ -25,14 +26,15 @@ if "%PHP_BINARY%"=="" (
 if exist PocketMine-MP.phar (
 	set POCKETMINE_FILE=PocketMine-MP.phar
 ) else (
+	rem TODO: ask to automatically install the latest version?
 	echo PocketMine-MP.phar not found
-	echo Downloads can be found at https://github.com/pmmp/PocketMine-MP/releases
+	echo Downloads can be found at https://github.com/NetherrackMC/Netherrack/releases
 	pause
 	exit 1
 )
 
 if exist bin\mintty.exe (
-	start "" bin\mintty.exe -o Columns=88 -o Rows=32 -o AllowBlinking=0 -o FontQuality=3 -o Font="Consolas" -o FontHeight=10 -o CursorType=0 -o CursorBlinks=1 -h error -t "PocketMine-MP" -i bin/pocketmine.ico -w max %PHP_BINARY% %POCKETMINE_FILE% --enable-ansi %*
+	start "" bin\mintty.exe -o Columns=88 -o Rows=32 -o AllowBlinking=0 -o FontQuality=3 -o Font="Consolas" -o FontHeight=10 -o CursorType=0 -o CursorBlinks=1 -h error -t "NetherrackMC" -i bin/pocketmine.ico -w max %PHP_BINARY% %POCKETMINE_FILE% --enable-ansi %*
 ) else (
 	REM pause on exitcode != 0 so the user can see what went wrong
 	%PHP_BINARY% %POCKETMINE_FILE% %* || pause

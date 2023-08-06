@@ -111,7 +111,7 @@ abstract class Timezone{
 				 * wmic timezone get Caption
 				 * Get the timezone offset
 				 *
-				 * Sample Output var_dump
+				 * Sample Output var dump
 				 * array(3) {
 				 *	  [0] =>
 				 *	  string(7) "Caption"
