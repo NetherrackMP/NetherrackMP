@@ -31,6 +31,10 @@ use pocketmine\world\World;
 use function lcg_value;
 
 abstract class SpawnEgg extends Item{
+	public function __construct(ItemIdentifier $identifier, string $name = "Unknown", protected string $entityClass = "")
+	{
+		parent::__construct($identifier, $name);
+	}
 
 	abstract protected function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch) : Entity;
 

@@ -29,9 +29,12 @@ use pocketmine\block\VanillaBlocks as Blocks;
 use pocketmine\entity\aggressive\Zombie;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Location;
+use pocketmine\entity\mob\Chicken;
+use pocketmine\entity\mob\Cow;
+use pocketmine\entity\mob\Donkey;
 use pocketmine\entity\mob\Sheep;
-use pocketmine\entity\Squid;
-use pocketmine\entity\Villager;
+use pocketmine\entity\mob\Squid;
+use pocketmine\entity\mob\Villager;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\ItemIdentifier as IID;
 use pocketmine\item\ItemTypeIds as Ids;
@@ -283,7 +286,6 @@ use pocketmine\world\World;
  * @method static Boat SPRUCE_BOAT()
  * @method static ItemBlockWallOrFloor SPRUCE_SIGN()
  * @method static Spyglass SPYGLASS()
- * @method static SpawnEgg SQUID_SPAWN_EGG()
  * @method static Steak STEAK()
  * @method static Stick STICK()
  * @method static Axe STONE_AXE()
@@ -297,8 +299,6 @@ use pocketmine\world\World;
  * @method static SweetBerries SWEET_BERRIES()
  * @method static Totem TOTEM()
  * @method static TurtleHelmet TURTLE_HELMET()
- * @method static SpawnEgg VILLAGER_SPAWN_EGG()
- * @method static SpawnEgg SHEEP_SPAWN_EGG()
  * @method static ItemBlockWallOrFloor WARPED_SIGN()
  * @method static LiquidBucket WATER_BUCKET()
  * @method static Item WHEAT()
@@ -310,16 +310,35 @@ use pocketmine\world\World;
  * @method static Sword WOODEN_SWORD()
  * @method static WritableBook WRITABLE_BOOK()
  * @method static WrittenBook WRITTEN_BOOK()
+ * @method static SpawnEgg SHEEP_SPAWN_EGG()
  * @method static SpawnEgg ZOMBIE_SPAWN_EGG()
+ * @method static SpawnEgg VILLAGER_SPAWN_EGG()
+ * @method static SpawnEgg SQUID_SPAWN_EGG()
+ * @method static SpawnEgg CHICKEN_SPAWN_EGG()
+ * @method static SpawnEgg COW_SPAWN_EGG()
+ * @method static SpawnEgg DONKEY_SPAWN_EGG()
  */
-final class VanillaItems{
+final class VanillaItems
+{
 	use CloningRegistryTrait;
 
-	private function __construct(){
+	public const SPAWN_ITEMS = [
+		"sheep" => Sheep::class,
+		"zombie" => Zombie::class,
+		"villager" => Villager::class,
+		"squid" => Squid::class,
+		"chicken" => Chicken::class,
+		"cow" => Cow::class,
+		"donkey" => Donkey::class
+	];
+
+	private function __construct()
+	{
 		//NOOP
 	}
 
-	protected static function register(string $name, Item $item) : void{
+	protected static function register(string $name, Item $item): void
+	{
 		self::_registryRegister($name, $item);
 	}
 
@@ -327,14 +346,16 @@ final class VanillaItems{
 	 * @return Item[]
 	 * @phpstan-return array<string, Item>
 	 */
-	public static function getAll() : array{
+	public static function getAll(): array
+	{
 		//phpstan doesn't support generic traits yet :(
 		/** @var Item[] $result */
 		$result = self::_registryGetAll();
 		return $result;
 	}
 
-	protected static function setup() : void{
+	protected static function setup(): void
+	{
 		self::registerArmorItems();
 		self::registerSpawnEggs();
 		self::registerTierToolItems();
@@ -473,11 +494,17 @@ final class VanillaItems{
 		self::register("nether_brick", new Item(new IID(Ids::NETHER_BRICK), "Nether Brick"));
 		self::register("nether_quartz", new Item(new IID(Ids::NETHER_QUARTZ), "Nether Quartz"));
 		self::register("nether_star", new Item(new IID(Ids::NETHER_STAR), "Nether Star"));
-		self::register("netherite_ingot", new class(new IID(Ids::NETHERITE_INGOT), "Netherite Ingot") extends Item{
-			public function isFireProof() : bool{ return true; }
+		self::register("netherite_ingot", new class(new IID(Ids::NETHERITE_INGOT), "Netherite Ingot") extends Item {
+			public function isFireProof(): bool
+			{
+				return true;
+			}
 		});
-		self::register("netherite_scrap", new class(new IID(Ids::NETHERITE_SCRAP), "Netherite Scrap") extends Item{
-			public function isFireProof() : bool{ return true; }
+		self::register("netherite_scrap", new class(new IID(Ids::NETHERITE_SCRAP), "Netherite Scrap") extends Item {
+			public function isFireProof(): bool
+			{
+				return true;
+			}
 		});
 		self::register("oak_sign", new ItemBlockWallOrFloor(new IID(Ids::OAK_SIGN), Blocks::OAK_SIGN(), Blocks::OAK_WALL_SIGN()));
 		self::register("painting", new PaintingItem(new IID(Ids::PAINTING), "Painting"));
@@ -545,9 +572,9 @@ final class VanillaItems{
 		self::register("writable_book", new WritableBook(new IID(Ids::WRITABLE_BOOK), "Book & Quill"));
 		self::register("written_book", new WrittenBook(new IID(Ids::WRITTEN_BOOK), "Written Book"));
 
-		foreach(BoatType::getAll() as $type){
+		foreach (BoatType::getAll() as $type) {
 			//boat type is static, because different types of wood may have different properties
-			self::register($type->name() . "_boat", new Boat(new IID(match($type){
+			self::register($type->name() . "_boat", new Boat(new IID(match ($type) {
 				BoatType::OAK() => Ids::OAK_BOAT,
 				BoatType::SPRUCE() => Ids::SPRUCE_BOAT,
 				BoatType::BIRCH() => Ids::BIRCH_BOAT,
@@ -560,31 +587,24 @@ final class VanillaItems{
 		}
 	}
 
-	private static function registerSpawnEggs() : void{
-		self::register("zombie_spawn_egg", new class(new IID(Ids::ZOMBIE_SPAWN_EGG), "Zombie Spawn Egg") extends SpawnEgg{
-			protected function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch) : Entity{
-				return new Zombie(Location::fromObject($pos, $world, $yaw, $pitch));
-			}
-		});
-		self::register("squid_spawn_egg", new class(new IID(Ids::SQUID_SPAWN_EGG), "Squid Spawn Egg") extends SpawnEgg{
-			public function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch) : Entity{
-				return new Squid(Location::fromObject($pos, $world, $yaw, $pitch));
-			}
-		});
-		self::register("villager_spawn_egg", new class(new IID(Ids::VILLAGER_SPAWN_EGG), "Villager Spawn Egg") extends SpawnEgg{
-			public function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch) : Entity{
-				return new Villager(Location::fromObject($pos, $world, $yaw, $pitch));
-			}
-		});
-		self::register("sheep_spawn_egg", new class(new IID(Ids::SHEEP_SPAWN_EGG), "Sheep Spawn Egg") extends SpawnEgg{
-			public function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch): Entity
-			{
-				return new Sheep(Location::fromObject($pos, $world, $yaw, $pitch));
-			}
-		});
+	private static function registerSpawnEggs(): void
+	{
+		foreach (self::SPAWN_ITEMS as $n => $class) {
+			self::register($n . "_spawn_egg", new class(
+				new IID(constant(Ids::class . "::" . strtoupper($n) . "_SPAWN_EGG")),
+				implode(" ", array_map("ucfirst", explode("_", $n))) . " Spawn Egg",
+				$class
+			) extends SpawnEgg {
+				protected function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch): Entity
+				{
+					return new ($this->entityClass)(Location::fromObject($pos, $world, $yaw, $pitch));
+				}
+			});
+		}
 	}
 
-	private static function registerTierToolItems() : void{
+	private static function registerTierToolItems(): void
+	{
 		self::register("diamond_axe", new Axe(new IID(Ids::DIAMOND_AXE), "Diamond Axe", ToolTier::DIAMOND()));
 		self::register("golden_axe", new Axe(new IID(Ids::GOLDEN_AXE), "Golden Axe", ToolTier::GOLD()));
 		self::register("iron_axe", new Axe(new IID(Ids::IRON_AXE), "Iron Axe", ToolTier::IRON()));
@@ -617,7 +637,8 @@ final class VanillaItems{
 		self::register("wooden_sword", new Sword(new IID(Ids::WOODEN_SWORD), "Wooden Sword", ToolTier::WOOD()));
 	}
 
-	private static function registerArmorItems() : void{
+	private static function registerArmorItems(): void
+	{
 		self::register("chainmail_boots", new Armor(new IID(Ids::CHAINMAIL_BOOTS), "Chainmail Boots", new ArmorTypeInfo(1, 196, ArmorInventory::SLOT_FEET)));
 		self::register("diamond_boots", new Armor(new IID(Ids::DIAMOND_BOOTS), "Diamond Boots", new ArmorTypeInfo(3, 430, ArmorInventory::SLOT_FEET, 2)));
 		self::register("golden_boots", new Armor(new IID(Ids::GOLDEN_BOOTS), "Golden Boots", new ArmorTypeInfo(1, 92, ArmorInventory::SLOT_FEET)));

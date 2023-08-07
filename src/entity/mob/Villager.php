@@ -21,8 +21,11 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\mob;
 
+use pocketmine\entity\Ageable;
+use pocketmine\entity\EntitySizeInfo;
+use pocketmine\entity\Living;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;

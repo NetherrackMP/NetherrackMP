@@ -43,14 +43,17 @@ use pocketmine\item\Medicine;
 use pocketmine\item\Potion;
 use pocketmine\item\SplashPotion;
 use pocketmine\item\SuspiciousStew;
+use pocketmine\item\VanillaItems;
 use pocketmine\item\VanillaItems as Items;
 
-final class ItemSerializerDeserializerRegistrar{
+final class ItemSerializerDeserializerRegistrar
+{
 
 	public function __construct(
 		private ?ItemDeserializer $deserializer,
-		private ?ItemSerializer $serializer
-	){
+		private ?ItemSerializer   $serializer
+	)
+	{
 		$this->register1to1BlockMappings();
 		$this->register1to1ItemMappings();
 		$this->register1to1BlockWithMetaMappings();
@@ -59,7 +62,8 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->registerMiscItemMappings();
 	}
 
-	public function map1to1Item(string $id, Item $item) : void{
+	public function map1to1Item(string $id, Item $item): void
+	{
 		$this->deserializer?->map($id, fn() => clone $item);
 		$this->serializer?->map($item, fn() => new Data($id));
 	}
@@ -70,20 +74,22 @@ final class ItemSerializerDeserializerRegistrar{
 	 * @phpstan-param \Closure(TItem, int) : void $deserializeMeta
 	 * @phpstan-param \Closure(TItem) : int       $serializeMeta
 	 */
-	public function map1to1ItemWithMeta(string $id, Item $item, \Closure $deserializeMeta, \Closure $serializeMeta) : void{
-		$this->deserializer?->map($id, function(Data $data) use ($item, $deserializeMeta) : Item{
+	public function map1to1ItemWithMeta(string $id, Item $item, \Closure $deserializeMeta, \Closure $serializeMeta): void
+	{
+		$this->deserializer?->map($id, function (Data $data) use ($item, $deserializeMeta): Item {
 			$result = clone $item;
 			$deserializeMeta($result, $data->getMeta());
 			return $result;
 		});
-		$this->serializer?->map($item, function(Item $item) use ($id, $serializeMeta) : Data{
+		$this->serializer?->map($item, function (Item $item) use ($id, $serializeMeta): Data {
 			/** @phpstan-var TItem $item */
 			$meta = $serializeMeta($item);
 			return new Data($id, $meta);
 		});
 	}
 
-	public function map1to1Block(string $id, Block $block) : void{
+	public function map1to1Block(string $id, Block $block): void
+	{
 		$this->deserializer?->mapBlock($id, fn() => $block);
 		$this->serializer?->mapBlock($block, fn() => new Data($id));
 	}
@@ -94,13 +100,14 @@ final class ItemSerializerDeserializerRegistrar{
 	 * @phpstan-param \Closure(TBlock, int) : void $deserializeMeta
 	 * @phpstan-param \Closure(TBlock) : int       $serializeMeta
 	 */
-	public function map1to1BlockWithMeta(string $id, Block $block, \Closure $deserializeMeta, \Closure $serializeMeta) : void{
-		$this->deserializer?->mapBlock($id, function(Data $data) use ($block, $deserializeMeta) : Block{
+	public function map1to1BlockWithMeta(string $id, Block $block, \Closure $deserializeMeta, \Closure $serializeMeta): void
+	{
+		$this->deserializer?->mapBlock($id, function (Data $data) use ($block, $deserializeMeta): Block {
 			$result = clone $block;
 			$deserializeMeta($result, $data->getMeta());
 			return $result;
 		});
-		$this->serializer?->mapBlock($block, function(Block $block) use ($id, $serializeMeta) : Data{
+		$this->serializer?->mapBlock($block, function (Block $block) use ($id, $serializeMeta): Data {
 			$meta = $serializeMeta($block);
 			return new Data($id, $meta);
 		});
@@ -110,15 +117,16 @@ final class ItemSerializerDeserializerRegistrar{
 	 * @param Item[] $items
 	 * @phpstan-param array<int, Item> $items
 	 */
-	public function map1ToNItem(string $id, array $items) : void{
-		$this->deserializer?->map($id, function(Data $data) use ($items) : Item{
+	public function map1ToNItem(string $id, array $items): void
+	{
+		$this->deserializer?->map($id, function (Data $data) use ($items): Item {
 			$result = $items[$data->getMeta()] ?? null;
-			if($result === null){
+			if ($result === null) {
 				throw new ItemTypeDeserializeException("Unhandled meta value " . $data->getMeta() . " for item ID " . $data->getName());
 			}
 			return clone $result;
 		});
-		foreach($items as $meta => $item){
+		foreach ($items as $meta => $item) {
 			$this->serializer?->map($item, fn() => new Data($id, $meta));
 		}
 	}
@@ -128,7 +136,8 @@ final class ItemSerializerDeserializerRegistrar{
 	 * Mappings here are only necessary when the item has a dedicated item ID; in these cases, the blockstate is not
 	 * included in the itemstack, and the item ID may be different from the block ID.
 	 */
-	private function register1to1BlockMappings() : void{
+	private function register1to1BlockMappings(): void
+	{
 		$this->map1to1Block(Ids::ACACIA_DOOR, Blocks::ACACIA_DOOR());
 		$this->map1to1Block(Ids::BIRCH_DOOR, Blocks::BIRCH_DOOR());
 		$this->map1to1Block(Ids::BREWING_STAND, Blocks::BREWING_STAND());
@@ -157,7 +166,8 @@ final class ItemSerializerDeserializerRegistrar{
 	/**
 	 * Registers mappings for item IDs which directly correspond to PocketMine-MP items.
 	 */
-	private function register1to1ItemMappings() : void{
+	private function register1to1ItemMappings(): void
+	{
 		$this->map1to1Item(Ids::ACACIA_BOAT, Items::ACACIA_BOAT());
 		$this->map1to1Item(Ids::ACACIA_SIGN, Items::ACACIA_SIGN());
 		$this->map1to1Item(Ids::AMETHYST_SHARD, Items::AMETHYST_SHARD());
@@ -348,7 +358,6 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::SPRUCE_BOAT, Items::SPRUCE_BOAT());
 		$this->map1to1Item(Ids::SPRUCE_SIGN, Items::SPRUCE_SIGN());
 		$this->map1to1Item(Ids::SPYGLASS, Items::SPYGLASS());
-		$this->map1to1Item(Ids::SQUID_SPAWN_EGG, Items::SQUID_SPAWN_EGG());
 		$this->map1to1Item(Ids::STICK, Items::STICK());
 		$this->map1to1Item(Ids::STONE_AXE, Items::STONE_AXE());
 		$this->map1to1Item(Ids::STONE_HOE, Items::STONE_HOE());
@@ -361,7 +370,6 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::TOTEM_OF_UNDYING, Items::TOTEM());
 		$this->map1to1Item(Ids::TROPICAL_FISH, Items::CLOWNFISH());
 		$this->map1to1Item(Ids::TURTLE_HELMET, Items::TURTLE_HELMET());
-		$this->map1to1Item(Ids::VILLAGER_SPAWN_EGG, Items::VILLAGER_SPAWN_EGG());
 		$this->map1to1Item(Ids::WARPED_SIGN, Items::WARPED_SIGN());
 		$this->map1to1Item(Ids::WATER_BUCKET, Items::WATER_BUCKET());
 		$this->map1to1Item(Ids::WHEAT, Items::WHEAT());
@@ -373,7 +381,12 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::WOODEN_SWORD, Items::WOODEN_SWORD());
 		$this->map1to1Item(Ids::WRITABLE_BOOK, Items::WRITABLE_BOOK());
 		$this->map1to1Item(Ids::WRITTEN_BOOK, Items::WRITTEN_BOOK());
-		$this->map1to1Item(Ids::ZOMBIE_SPAWN_EGG, Items::ZOMBIE_SPAWN_EGG());
+
+		foreach (array_keys(VanillaItems::SPAWN_ITEMS) as $n) {
+			$n = strtoupper($n) . "_SPAWN_EGG";
+			$o = Items::__callStatic($n, []);
+			if ($o instanceof Item) $this->map1to1Item(constant(Ids::class . "::" . $n), $o);
+		}
 	}
 
 	/**
@@ -382,7 +395,8 @@ final class ItemSerializerDeserializerRegistrar{
 	 * This can only be used if the target item type doesn't require any additional properties, since the items are
 	 * indexed by their base type ID.
 	 */
-	private function register1ToNItemMappings() : void{
+	private function register1ToNItemMappings(): void
+	{
 		$this->map1ToNItem(Ids::ARROW, [
 			0 => Items::ARROW(),
 			//TODO: tipped arrows
@@ -434,11 +448,12 @@ final class ItemSerializerDeserializerRegistrar{
 	 * TODO: try and make this less ugly; for the most part the logic is symmetrical, it's just difficult to write it
 	 * in a unified manner.
 	 */
-	private function register1to1BlockWithMetaMappings() : void{
+	private function register1to1BlockWithMetaMappings(): void
+	{
 		$this->map1to1BlockWithMeta(
 			Ids::BED,
 			Blocks::BED(),
-			function(Bed $block, int $meta) : void{
+			function (Bed $block, int $meta): void {
 				$block->setColor(DyeColorIdMap::getInstance()->fromId($meta) ?? throw new ItemTypeDeserializeException("Unknown bed color ID $meta"));
 			},
 			fn(Bed $block) => DyeColorIdMap::getInstance()->toId($block->getColor())
@@ -446,7 +461,7 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1BlockWithMeta(
 			Ids::SKULL,
 			Blocks::MOB_HEAD(),
-			function(MobHead $block, int $meta) : void{
+			function (MobHead $block, int $meta): void {
 				$block->setMobHeadType(MobHeadTypeIdMap::getInstance()->fromId($meta) ?? throw new ItemTypeDeserializeException("Unknown mob head type ID $meta"));
 			},
 			fn(MobHead $block) => MobHeadTypeIdMap::getInstance()->toId($block->getMobHeadType())
@@ -458,11 +473,12 @@ final class ItemSerializerDeserializerRegistrar{
 	 * TODO: try and make this less ugly; for the most part the logic is symmetrical, it's just difficult to write it
 	 * in a unified manner.
 	 */
-	private function register1to1ItemWithMetaMappings() : void{
+	private function register1to1ItemWithMetaMappings(): void
+	{
 		$this->map1to1ItemWithMeta(
 			Ids::BANNER,
 			Items::BANNER(),
-			function(Banner $item, int $meta) : void{
+			function (Banner $item, int $meta): void {
 				$item->setColor(DyeColorIdMap::getInstance()->fromInvertedId($meta) ?? throw new ItemTypeDeserializeException("Unknown banner meta $meta"));
 			},
 			fn(Banner $item) => DyeColorIdMap::getInstance()->toInvertedId($item->getColor())
@@ -470,7 +486,7 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1ItemWithMeta(
 			Ids::MEDICINE,
 			Items::MEDICINE(),
-			function(Medicine $item, int $meta) : void{
+			function (Medicine $item, int $meta): void {
 				$item->setType(MedicineTypeIdMap::getInstance()->fromId($meta) ?? throw new ItemTypeDeserializeException("Unknown medicine type ID $meta"));
 			},
 			fn(Medicine $item) => MedicineTypeIdMap::getInstance()->toId($item->getType())
@@ -478,7 +494,7 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1ItemWithMeta(
 			Ids::POTION,
 			Items::POTION(),
-			function(Potion $item, int $meta) : void{
+			function (Potion $item, int $meta): void {
 				$item->setType(PotionTypeIdMap::getInstance()->fromId($meta) ?? throw new ItemTypeDeserializeException("Unknown potion type ID $meta"));
 			},
 			fn(Potion $item) => PotionTypeIdMap::getInstance()->toId($item->getType())
@@ -486,7 +502,7 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1ItemWithMeta(
 			Ids::SPLASH_POTION,
 			Items::SPLASH_POTION(),
-			function(SplashPotion $item, int $meta) : void{
+			function (SplashPotion $item, int $meta): void {
 				$item->setType(PotionTypeIdMap::getInstance()->fromId($meta) ?? throw new ItemTypeDeserializeException("Unknown potion type ID $meta"));
 			},
 			fn(SplashPotion $item) => PotionTypeIdMap::getInstance()->toId($item->getType())
@@ -494,7 +510,7 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1ItemWithMeta(
 			Ids::SUSPICIOUS_STEW,
 			Items::SUSPICIOUS_STEW(),
-			function(SuspiciousStew $item, int $meta) : void{
+			function (SuspiciousStew $item, int $meta): void {
 				$item->setType(SuspiciousStewTypeIdMap::getInstance()->fromId($meta) ?? throw new ItemTypeDeserializeException("Unknown suspicious stew type ID $meta"));
 			},
 			fn(SuspiciousStew $item) => SuspiciousStewTypeIdMap::getInstance()->toId($item->getType())
@@ -508,8 +524,9 @@ final class ItemSerializerDeserializerRegistrar{
 	 * Most of these are single PocketMine-MP items which map to multiple IDs depending on their properties, which is
 	 * complex to implement in a generic way.
 	 */
-	private function registerMiscItemMappings() : void{
-		foreach(DyeColor::getAll() as $color){
+	private function registerMiscItemMappings(): void
+	{
+		foreach (DyeColor::getAll() as $color) {
 			$id = DyeColorIdMap::getInstance()->toItemId($color);
 			$this->deserializer?->map($id, fn() => Items::DYE()->setColor($color));
 		}
