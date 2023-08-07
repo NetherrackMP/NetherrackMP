@@ -28,10 +28,14 @@ use pocketmine\world\generator\object\OreType;
 use pocketmine\world\generator\populator\Ore;
 use pocketmine\world\generator\populator\TallGrass;
 use pocketmine\world\generator\populator\Tree;
+use pocketmine\world\overworld\OverworldGenerator;
+use pocketmine\world\World;
 
-class MountainsBiome extends GrassyBiome{
+class MountainsBiome extends GrassyBiome
+{
 
-	public function __construct(){
+	public function __construct()
+	{
 		parent::__construct();
 
 		$trees = new Tree();
@@ -44,9 +48,12 @@ class MountainsBiome extends GrassyBiome{
 		$this->addPopulator($tallGrass);
 
 		$ores = new Ore();
-		$ores->setOreTypes([
+		$l = [
 			new OreType(VanillaBlocks::EMERALD_ORE(), VanillaBlocks::STONE(), 11, 1, 0, 32)
-		]);
+		];
+		if (OverworldGenerator::$DEEPSLATE_ON)
+			$l[] = new OreType(VanillaBlocks::DEEPSLATE_EMERALD_ORE(), VanillaBlocks::DEEPSLATE(), 11, 1, World::Y_MIN, 0);
+		$ores->setOreTypes($l);
 
 		$this->addPopulator($ores);
 
@@ -56,7 +63,8 @@ class MountainsBiome extends GrassyBiome{
 		$this->rainfall = 0.5;
 	}
 
-	public function getName() : string{
+	public function getName(): string
+	{
 		return "Mountains";
 	}
 }

@@ -30,9 +30,11 @@ use pocketmine\world\format\SubChunk;
 use pocketmine\world\generator\object\OreType;
 use pocketmine\world\generator\populator\Ore;
 use pocketmine\world\generator\populator\Populator;
+use pocketmine\world\World;
 use function count;
 
-class Flat extends Generator{
+class Flat extends Generator
+{
 	private Chunk $chunk;
 	/** @var Populator[] */
 	private array $populators = [];
@@ -42,22 +44,24 @@ class Flat extends Generator{
 	/**
 	 * @throws InvalidGeneratorOptionsException
 	 */
-	public function __construct(int $seed, string $preset){
+	public function __construct(int $seed, string $preset)
+	{
 		parent::__construct($seed, $preset !== "" ? $preset : "2;bedrock,2xdirt,grass;1;");
 		$this->options = FlatGeneratorOptions::parsePreset($this->preset);
 
-		if(isset($this->options->getExtraOptions()["decoration"])){
+		if (isset($this->options->getExtraOptions()["decoration"])) {
 			$ores = new Ore();
 			$stone = VanillaBlocks::STONE();
+			$deepslate = VanillaBlocks::DEEPSLATE();
 			$ores->setOreTypes([
-				new OreType(VanillaBlocks::COAL_ORE(), $stone, 20, 16, 0, 128),
-				new OreType(VanillaBlocks::IRON_ORE(), $stone, 20, 8, 0, 64),
-				new OreType(VanillaBlocks::REDSTONE_ORE(), $stone, 8, 7, 0, 16),
-				new OreType(VanillaBlocks::LAPIS_LAZULI_ORE(), $stone, 1, 6, 0, 32),
-				new OreType(VanillaBlocks::GOLD_ORE(), $stone, 2, 8, 0, 32),
-				new OreType(VanillaBlocks::DIAMOND_ORE(), $stone, 1, 7, 0, 16),
-				new OreType(VanillaBlocks::DIRT(), $stone, 20, 32, 0, 128),
-				new OreType(VanillaBlocks::GRAVEL(), $stone, 10, 16, 0, 128)
+				new OreType(VanillaBlocks::COAL_ORE(), [$stone, $deepslate], 20, 16, World::Y_MIN, 128),
+				new OreType(VanillaBlocks::IRON_ORE(), [$stone, $deepslate], 20, 8, World::Y_MIN, 64),
+				new OreType(VanillaBlocks::REDSTONE_ORE(), [$stone, $deepslate], 8, 7, World::Y_MIN, 16),
+				new OreType(VanillaBlocks::LAPIS_LAZULI_ORE(), [$stone, $deepslate], 1, 6, World::Y_MIN, 32),
+				new OreType(VanillaBlocks::GOLD_ORE(), [$stone, $deepslate], 2, 8, World::Y_MIN, 32),
+				new OreType(VanillaBlocks::DIAMOND_ORE(), [$stone, $deepslate], 1, 7, World::Y_MIN, 16),
+				new OreType(VanillaBlocks::DIRT(), [$stone, $deepslate], 20, 32, World::Y_MIN, 128),
+				new OreType(VanillaBlocks::GRAVEL(), [$stone, $deepslate], 10, 16, World::Y_MIN, 128)
 			]);
 			$this->populators[] = $ores;
 		}
@@ -65,18 +69,19 @@ class Flat extends Generator{
 		$this->generateBaseChunk();
 	}
 
-	protected function generateBaseChunk() : void{
+	protected function generateBaseChunk(): void
+	{
 		$this->chunk = new Chunk([], false);
 
 		$structure = $this->options->getStructure();
 		$count = count($structure);
-		for($sy = 0; $sy < $count; $sy += SubChunk::EDGE_LENGTH){
+		for ($sy = 0; $sy < $count; $sy += SubChunk::EDGE_LENGTH) {
 			$subchunk = $this->chunk->getSubChunk($sy >> SubChunk::COORD_BIT_SIZE);
-			for($y = 0; $y < SubChunk::EDGE_LENGTH && isset($structure[$y | $sy]); ++$y){
+			for ($y = 0; $y < SubChunk::EDGE_LENGTH && isset($structure[$y | $sy]); ++$y) {
 				$id = $structure[$y | $sy];
 
-				for($Z = 0; $Z < SubChunk::EDGE_LENGTH; ++$Z){
-					for($X = 0; $X < SubChunk::EDGE_LENGTH; ++$X){
+				for ($Z = 0; $Z < SubChunk::EDGE_LENGTH; ++$Z) {
+					for ($X = 0; $X < SubChunk::EDGE_LENGTH; ++$X) {
 						$subchunk->setBlockStateId($X, $y, $Z, $id);
 					}
 				}
@@ -84,13 +89,15 @@ class Flat extends Generator{
 		}
 	}
 
-	public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void{
+	public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ): void
+	{
 		$world->setChunk($chunkX, $chunkZ, clone $this->chunk);
 	}
 
-	public function populateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void{
+	public function populateChunk(ChunkManager $world, int $chunkX, int $chunkZ): void
+	{
 		$this->random->setSeed(0xdeadbeef ^ ($chunkX << 8) ^ $chunkZ ^ $this->seed);
-		foreach($this->populators as $populator){
+		foreach ($this->populators as $populator) {
 			$populator->populate($world, $chunkX, $chunkZ, $this->random);
 		}
 

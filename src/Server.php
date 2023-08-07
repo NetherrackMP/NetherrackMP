@@ -1126,7 +1126,7 @@ class Server{
 				}
 
 				if(isset($options["seed"])){
-					$convertedSeed = Generator::convertSeed((string) ($options["seed"] ?? ""));
+					$convertedSeed = Generator::convertSeed((string)$options["seed"]);
 					if($convertedSeed !== null){
 						$creationOptions->setSeed($convertedSeed);
 					}

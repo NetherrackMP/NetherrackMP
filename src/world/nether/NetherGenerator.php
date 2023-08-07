@@ -86,7 +86,7 @@ class NetherGenerator extends VanillaGenerator{
 		for($x = 0; $x < 16; ++$x){
 			for($z = 0; $z < 16; ++$z){
 				$biome = $biomes->getBiome($x, $z);
-				for($y = 0; $y < World::Y_MAX; ++$y)
+				for($y = World::Y_MIN; $y < World::Y_MAX; ++$y)
 					$chunk->setBiomeId($x, $y, $z, $biome);
 
 				$this->generateTerrainColumn($world, $cx + $x, $cz + $z, $surfaceNoise[$x | $z << 4], $soulSandNoise[$x | $z << 4], $graveNoise[$x | $z << 4]);

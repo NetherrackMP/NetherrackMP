@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace pocketmine\world\object;
 
-use pocketmine\world\utils\MathHelper;
 use pocketmine\block\Block;
+use pocketmine\block\BlockTypeIds;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
+use pocketmine\world\utils\MathHelper;
 
-class OreVein extends TerrainObject{
+class OreVein extends TerrainObject
+{
 
 	/**
 	 * The square of the percentage of the radius that is the distance between the given block's
@@ -21,28 +24,45 @@ class OreVein extends TerrainObject{
 	 * @param int $x the raw coordinate
 	 * @return float the square of the normalized coordinate
 	 */
-	protected static function normalizedSquaredCoordinate(float $origin, float $radius, int $x) : float{
+	protected static function normalizedSquaredCoordinate(float $origin, float $radius, int $x): float
+	{
 		$squaredNormalizedX = ($x + 0.5 - $origin) / $radius;
 		$squaredNormalizedX *= $squaredNormalizedX;
 		return $squaredNormalizedX;
 	}
 
 	private Block $type;
+	private Block $low;
 	private int $amount;
-	private int $targetType;
+	private array $targetTypes;
 
 	/**
 	 * Creates the instance for a given ore type.
 	 *
 	 * @param OreType $oreType the ore type
 	 */
-	public function __construct(OreType $oreType){
-		$this->type = $oreType->getType();
+	public function __construct(OreType $oreType)
+	{
+		$this->low = $this->type = $oreType->getType();
+		$ind = array_search($this->type->getTypeId(), [
+			BlockTypeIds::COAL_ORE, BlockTypeIds::GOLD_ORE, BlockTypeIds::IRON_ORE, BlockTypeIds::DIAMOND_ORE,
+			BlockTypeIds::COPPER_ORE, BlockTypeIds::EMERALD_ORE, BlockTypeIds::LAPIS_LAZULI_ORE,
+			BlockTypeIds::REDSTONE_ORE
+		]);
+		if ($ind !== false) {
+			$name = [
+				"COAL_ORE", "GOLD_ORE", "IRON_ORE", "DIAMOND_ORE", "COPPER_ORE", "EMERALD_ORE", "LAPIS_LAZULI_ORE",
+				"REDSTONE_ORE"
+			][$ind];
+			$o = VanillaBlocks::__callStatic("DEEPSLATE_" . $name, []);
+			if ($o instanceof Block) $this->low = $o;
+		}
 		$this->amount = $oreType->getAmount();
-		$this->targetType = $oreType->getTargetType();
+		$this->targetTypes = $oreType->getTargetTypes();
 	}
 
-	public function generate(ChunkManager $world, Random $random, int $sourceX, int $sourceY, int $sourceZ) : bool{
+	public function generate(ChunkManager $world, Random $random, int $sourceX, int $sourceY, int $sourceZ): bool
+	{
 		$angle = $random->nextFloat() * M_PI;
 		$dx1 = $sourceX + MathHelper::getInstance()->sin($angle) * $this->amount / 8.0;
 		$dx2 = $sourceX - MathHelper::getInstance()->sin($angle) * $this->amount / 8.0;
@@ -51,7 +71,7 @@ class OreVein extends TerrainObject{
 		$dy1 = $sourceY + $random->nextBoundedInt(3) - 2;
 		$dy2 = $sourceY + $random->nextBoundedInt(3) - 2;
 		$succeeded = false;
-		for($i = 0; $i < $this->amount; ++$i){
+		for ($i = 0; $i < $this->amount; ++$i) {
 			$originX = $dx1 + ($dx2 - $dx1) * $i / $this->amount;
 			$originY = $dy1 + ($dy2 - $dy1) * $i / $this->amount;
 			$originZ = $dz1 + ($dz2 - $dz1) * $i / $this->amount;
@@ -59,30 +79,30 @@ class OreVein extends TerrainObject{
 			$radiusH = (MathHelper::getInstance()->sin($i * M_PI / $this->amount) + $q + 1) / 2.0;
 			$radiusV = (MathHelper::getInstance()->sin($i * M_PI / $this->amount) + $q + 1) / 2.0;
 
-			$minX = (int) ($originX - $radiusH);
-			$maxX = (int) ($originX + $radiusH);
+			$minX = (int)($originX - $radiusH);
+			$maxX = (int)($originX + $radiusH);
 
-			$minY = (int) ($originY - $radiusV);
-			$maxY = (int) ($originY + $radiusV);
+			$minY = (int)($originY - $radiusV);
+			$maxY = (int)($originY + $radiusV);
 
-			$minZ = (int) ($originZ - $radiusH);
-			$maxZ = (int) ($originZ + $radiusH);
+			$minZ = (int)($originZ - $radiusH);
+			$maxZ = (int)($originZ + $radiusH);
 
-			for($x = $minX; $x <= $maxX; ++$x){
+			for ($x = $minX; $x <= $maxX; ++$x) {
 				// scale the center of x to the range [-1, 1] within the circle
 				$squaredNormalizedX = self::normalizedSquaredCoordinate($originX, $radiusH, $x);
-				if($squaredNormalizedX >= 1){
+				if ($squaredNormalizedX >= 1) {
 					continue;
 				}
-				for($y = $minY; $y <= $maxY; ++$y){
+				for ($y = $minY; $y <= $maxY; ++$y) {
 					$squaredNormalizedY = self::normalizedSquaredCoordinate($originY, $radiusV, $y);
-					if($squaredNormalizedX + $squaredNormalizedY >= 1){
+					if ($squaredNormalizedX + $squaredNormalizedY >= 1) {
 						continue;
 					}
-					for($z = $minZ; $z <= $maxZ; ++$z){
+					for ($z = $minZ; $z <= $maxZ; ++$z) {
 						$squaredNormalizedZ = self::normalizedSquaredCoordinate($originZ, $radiusH, $z);
-						if($squaredNormalizedX + $squaredNormalizedY + $squaredNormalizedZ < 1 && $world->getBlockAt($x, $y, $z)->getTypeId() === $this->targetType){
-							$world->setBlockAt($x, $y, $z, $this->type);
+						if ($squaredNormalizedX + $squaredNormalizedY + $squaredNormalizedZ < 1 && in_array($world->getBlockAt($x, $y, $z)->getTypeId(), $this->targetTypes)) {
+							$world->setBlockAt($x, $y, $z, $y < 0 ? $this->low : $this->type);
 							$succeeded = true;
 						}
 					}

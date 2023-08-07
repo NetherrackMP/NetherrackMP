@@ -40,7 +40,7 @@ class MegaJungleTree extends GenericTree{
 			// check for block collision on horizontal slices
 			for($x = $baseX - $radius; $x <= $baseX + $radius; ++$x){
 				for($z = $baseZ - $radius; $z <= $baseZ + $radius; ++$z){
-					if($y >= 0 && $y < World::Y_MAX){
+					if($y >= World::Y_MIN && $y < World::Y_MAX){
 						// we can overlap some blocks around
 						if(!$this->canBeOverridden($world->getBlockAt($x, $y, $z))){
 							return false;

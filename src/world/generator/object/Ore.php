@@ -26,24 +26,31 @@ namespace pocketmine\world\generator\object;
 use pocketmine\math\VectorMath;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
+use pocketmine\world\World;
 use function sin;
 use const M_PI;
 
-class Ore{
+class Ore
+{
 	public function __construct(
-		private Random $random,
-		public OreType $type
-	){}
+		private readonly Random $random,
+		public OreType          $type
+	)
+	{
+	}
 
-	public function getType() : OreType{
+	public function getType(): OreType
+	{
 		return $this->type;
 	}
 
-	public function canPlaceObject(ChunkManager $world, int $x, int $y, int $z) : bool{
-		return $world->getBlockAt($x, $y, $z)->hasSameTypeId($this->type->replaces);
+	public function canPlaceObject(ChunkManager $world, int $x, int $y, int $z): bool
+	{
+		return in_array($world->getBlockAt($x, $y, $z)->getTypeId(), $this->type->replaces);
 	}
 
-	public function placeObject(ChunkManager $world, int $x, int $y, int $z) : void{
+	public function placeObject(ChunkManager $world, int $x, int $y, int $z): void
+	{
 		$clusterSize = $this->type->clusterSize;
 		$angle = $this->random->nextFloat() * M_PI;
 		$offset = VectorMath::getDirection2D($angle)->multiply($clusterSize / 8);
@@ -53,35 +60,35 @@ class Ore{
 		$z2 = $z + 8 - $offset->y;
 		$y1 = $y + $this->random->nextBoundedInt(3) + 2;
 		$y2 = $y + $this->random->nextBoundedInt(3) + 2;
-		for($count = 0; $count <= $clusterSize; ++$count){
+		for ($count = 0; $count <= $clusterSize; ++$count) {
 			$seedX = $x1 + ($x2 - $x1) * $count / $clusterSize;
 			$seedY = $y1 + ($y2 - $y1) * $count / $clusterSize;
 			$seedZ = $z1 + ($z2 - $z1) * $count / $clusterSize;
 			$size = ((sin($count * (M_PI / $clusterSize)) + 1) * $this->random->nextFloat() * $clusterSize / 16 + 1) / 2;
 
-			$startX = (int) ($seedX - $size);
-			$startY = (int) ($seedY - $size);
-			$startZ = (int) ($seedZ - $size);
-			$endX = (int) ($seedX + $size);
-			$endY = (int) ($seedY + $size);
-			$endZ = (int) ($seedZ + $size);
+			$startX = (int)($seedX - $size);
+			$startY = (int)($seedY - $size);
+			$startZ = (int)($seedZ - $size);
+			$endX = (int)($seedX + $size);
+			$endY = (int)($seedY + $size);
+			$endZ = (int)($seedZ + $size);
 
-			for($xx = $startX; $xx <= $endX; ++$xx){
+			for ($xx = $startX; $xx <= $endX; ++$xx) {
 				$sizeX = ($xx + 0.5 - $seedX) / $size;
 				$sizeX *= $sizeX;
 
-				if($sizeX < 1){
-					for($yy = $startY; $yy <= $endY; ++$yy){
+				if ($sizeX < 1) {
+					for ($yy = $startY; $yy <= $endY; ++$yy) {
 						$sizeY = ($yy + 0.5 - $seedY) / $size;
 						$sizeY *= $sizeY;
 
-						if($yy > 0 && ($sizeX + $sizeY) < 1){
-							for($zz = $startZ; $zz <= $endZ; ++$zz){
+						if ($yy > World::Y_MIN && ($sizeX + $sizeY) < 1) {
+							for ($zz = $startZ; $zz <= $endZ; ++$zz) {
 								$sizeZ = ($zz + 0.5 - $seedZ) / $size;
 								$sizeZ *= $sizeZ;
 
-								if(($sizeX + $sizeY + $sizeZ) < 1 && $world->getBlockAt($xx, $yy, $zz)->hasSameTypeId($this->type->replaces)){
-									$world->setBlockAt($xx, $yy, $zz, $this->type->material);
+								if (($sizeX + $sizeY + $sizeZ) < 1 && $this->canPlaceObject($world, $xx, $yy, $zz)) {
+									$world->setBlockAt($xx, $yy, $zz, $yy < 0 ? $this->type->low : $this->type->material);
 								}
 							}
 						}

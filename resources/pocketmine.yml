@@ -136,6 +136,8 @@ chunk-ticking:
 chunk-generation:
   #Max. amount of chunks in the waiting queue to be populated
   population-queue-size: 32
+  #Should it continue to generate deepslate under Y=0
+  overworld-negative-y: true
 
 ticks-per:
   autosave: 6000

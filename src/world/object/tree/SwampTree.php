@@ -32,7 +32,7 @@ class SwampTree extends CocoaTree{
 
 	public function canPlace(int $baseX, int $baseY, int $baseZ, ChunkManager $world) : bool{
 		for($y = $baseY; $y <= $baseY + 1 + $this->height; ++$y){
-			if($y < 0 || $y >= World::Y_MAX){ // height out of range
+			if($y < World::Y_MIN || $y >= World::Y_MAX){ // height out of range
 				return false;
 			}
 

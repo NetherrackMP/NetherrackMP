@@ -24,14 +24,38 @@ declare(strict_types=1);
 namespace pocketmine\world\generator\object;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockTypeIds;
+use pocketmine\block\VanillaBlocks;
 
-class OreType{
+class OreType
+{
+	public array $replaces;
+	public Block $low;
+
 	public function __construct(
 		public Block $material,
-		public Block $replaces,
-		public int $clusterCount,
-		public int $clusterSize,
-		public int $minHeight,
-		public int $maxHeight
-	){}
+		Block|array  $replaces,
+		public int   $clusterCount,
+		public int   $clusterSize,
+		public int   $minHeight,
+		public int   $maxHeight
+	)
+	{
+		if (!is_array($replaces)) $replaces = [$replaces];
+		$this->replaces = $replaces;
+		$this->low = $this->material;
+		$ind = array_search($this->material->getTypeId(), [
+			BlockTypeIds::COAL_ORE, BlockTypeIds::GOLD_ORE, BlockTypeIds::IRON_ORE, BlockTypeIds::DIAMOND_ORE,
+			BlockTypeIds::COPPER_ORE, BlockTypeIds::EMERALD_ORE, BlockTypeIds::LAPIS_LAZULI_ORE,
+			BlockTypeIds::REDSTONE_ORE
+		]);
+		if ($ind !== false) {
+			$name = [
+				"COAL_ORE", "GOLD_ORE", "IRON_ORE", "DIAMOND_ORE", "COPPER_ORE", "EMERALD_ORE", "LAPIS_LAZULI_ORE",
+				"REDSTONE_ORE"
+			][$ind];
+			$o = VanillaBlocks::__callStatic("DEEPSLATE_" . $name, []);
+			if ($o instanceof Block) $this->low = $o;
+		}
+	}
 }

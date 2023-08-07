@@ -29,7 +29,7 @@ class WaterLilyDecorator extends Decorator{
 			$y = $sourceY + $random->nextBoundedInt(4) - $random->nextBoundedInt(4);
 
 			if(
-				$y >= 0 && $y < World::Y_MAX && $world->getBlockAt($x, $y, $z)->getTypeId() === BlockTypeIds::AIR &&
+				$y >= World::Y_MIN && $y < World::Y_MAX && $world->getBlockAt($x, $y, $z)->getTypeId() === BlockTypeIds::AIR &&
 				$world->getBlockAt($x, $y - 1, $z) instanceof Water
 			){
 				$world->setBlockAt($x, $y, $z, VanillaBlocks::LILY_PAD());
