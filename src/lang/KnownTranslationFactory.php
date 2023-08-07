@@ -1164,6 +1164,14 @@ final class KnownTranslationFactory{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_COMMAND_CLEAR_USAGE, []);
 	}
 
+	public static function pocketmine_command_clear_terminal_description() : Translatable{
+		return new Translatable(KnownTranslationKeys::POCKETMINE_COMMAND_CLEAR_TERMINAL_DESCRIPTION, []);
+	}
+
+	public static function pocketmine_command_clear_terminal_usage() : Translatable{
+		return new Translatable(KnownTranslationKeys::POCKETMINE_COMMAND_CLEAR_TERMINAL_USAGE, []);
+	}
+
 	public static function pocketmine_command_defaultgamemode_description() : Translatable{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_COMMAND_DEFAULTGAMEMODE_DESCRIPTION, []);
 	}
@@ -1842,6 +1850,10 @@ final class KnownTranslationFactory{
 
 	public static function pocketmine_permission_command_clear_self() : Translatable{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_PERMISSION_COMMAND_CLEAR_SELF, []);
+	}
+
+	public static function pocketmine_permission_command_clear_terminal() : Translatable{
+		return new Translatable(KnownTranslationKeys::POCKETMINE_PERMISSION_COMMAND_CLEARTERMINAL, []);
 	}
 
 	public static function pocketmine_permission_command_defaultgamemode() : Translatable{

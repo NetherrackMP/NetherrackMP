@@ -257,6 +257,8 @@ final class KnownTranslationKeys{
 	public const POCKETMINE_COMMAND_BANLIST_DESCRIPTION = "pocketmine.command.banlist.description";
 	public const POCKETMINE_COMMAND_CLEAR_DESCRIPTION = "pocketmine.command.clear.description";
 	public const POCKETMINE_COMMAND_CLEAR_USAGE = "pocketmine.command.clear.usage";
+	public const POCKETMINE_COMMAND_CLEAR_TERMINAL_DESCRIPTION = "pocketmine.command.clearterminal.description";
+	public const POCKETMINE_COMMAND_CLEAR_TERMINAL_USAGE = "pocketmine.command.clearterminal.usage";
 	public const POCKETMINE_COMMAND_DEFAULTGAMEMODE_DESCRIPTION = "pocketmine.command.defaultgamemode.description";
 	public const POCKETMINE_COMMAND_DEOP_DESCRIPTION = "pocketmine.command.deop.description";
 	public const POCKETMINE_COMMAND_DIFFICULTY_DESCRIPTION = "pocketmine.command.difficulty.description";
@@ -396,6 +398,7 @@ final class KnownTranslationKeys{
 	public const POCKETMINE_PERMISSION_COMMAND_BAN_PLAYER = "pocketmine.permission.command.ban.player";
 	public const POCKETMINE_PERMISSION_COMMAND_CLEAR_OTHER = "pocketmine.permission.command.clear.other";
 	public const POCKETMINE_PERMISSION_COMMAND_CLEAR_SELF = "pocketmine.permission.command.clear.self";
+	public const POCKETMINE_PERMISSION_COMMAND_CLEARTERMINAL = "pocketmine.permission.command.clearterminal";
 	public const POCKETMINE_PERMISSION_COMMAND_DEFAULTGAMEMODE = "pocketmine.permission.command.defaultgamemode";
 	public const POCKETMINE_PERMISSION_COMMAND_DIFFICULTY = "pocketmine.permission.command.difficulty";
 	public const POCKETMINE_PERMISSION_COMMAND_DUMPMEMORY = "pocketmine.permission.command.dumpmemory";

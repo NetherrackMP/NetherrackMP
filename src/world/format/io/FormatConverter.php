@@ -23,10 +23,10 @@ declare(strict_types=1);
 
 namespace pocketmine\world\format\io;
 
+use pocketmine\world\overworld\OverworldGenerator;
 use pocketmine\utils\Filesystem;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\generator\GeneratorManager;
-use pocketmine\world\generator\normal\Normal;
 use pocketmine\world\WorldCreationOptions;
 use Symfony\Component\Filesystem\Path;
 use function basename;
@@ -41,34 +41,38 @@ use function round;
 use function rtrim;
 use const DIRECTORY_SEPARATOR;
 
-class FormatConverter{
+class FormatConverter
+{
 	private string $backupPath;
 	private \Logger $logger;
 
 	public function __construct(
-		private WorldProvider $oldProvider,
+		private WorldProvider                     $oldProvider,
 		private WritableWorldProviderManagerEntry $newProvider,
-		string $backupPath,
-		\Logger $logger,
-		private int $chunksPerProgressUpdate = 256
-	){
+		string                                    $backupPath,
+		\Logger                                   $logger,
+		private int                               $chunksPerProgressUpdate = 256
+	)
+	{
 		$this->logger = new \PrefixedLogger($logger, "World Converter: " . $this->oldProvider->getWorldData()->getName());
 
-		if(!file_exists($backupPath)){
+		if (!file_exists($backupPath)) {
 			@mkdir($backupPath, 0777, true);
 		}
 		$nextSuffix = "";
-		do{
+		do {
 			$this->backupPath = Path::join($backupPath, basename($this->oldProvider->getPath()) . $nextSuffix);
 			$nextSuffix = "_" . crc32(random_bytes(4));
-		}while(file_exists($this->backupPath));
+		} while (file_exists($this->backupPath));
 	}
 
-	public function getBackupPath() : string{
+	public function getBackupPath(): string
+	{
 		return $this->backupPath;
 	}
 
-	public function execute() : void{
+	public function execute(): void
+	{
 		$new = $this->generateNew();
 
 		$this->populateLevelData($new->getWorldData());
@@ -79,12 +83,12 @@ class FormatConverter{
 		$new->close();
 
 		$this->logger->info("Backing up pre-conversion world to " . $this->backupPath);
-		if(!@rename($path, $this->backupPath)){
+		if (!@rename($path, $this->backupPath)) {
 			$this->logger->warning("Moving old world files for backup failed, attempting copy instead. This might take a long time.");
 			Filesystem::recursiveCopy($path, $this->backupPath);
 			Filesystem::recursiveUnlink($path);
 		}
-		if(!@rename($new->getPath(), $path)){
+		if (!@rename($new->getPath(), $path)) {
 			//we don't expect this to happen because worlds/ should most likely be all on the same FS, but just in case...
 			$this->logger->debug("Relocation of new world files to location failed, attempting copy and delete instead");
 			Filesystem::recursiveCopy($new->getPath(), $path);
@@ -94,19 +98,20 @@ class FormatConverter{
 		$this->logger->info("Conversion completed");
 	}
 
-	private function generateNew() : WritableWorldProvider{
+	private function generateNew(): WritableWorldProvider
+	{
 		$this->logger->info("Generating new world");
 		$data = $this->oldProvider->getWorldData();
 
 		$convertedOutput = rtrim($this->oldProvider->getPath(), "/" . DIRECTORY_SEPARATOR) . "_converted" . DIRECTORY_SEPARATOR;
-		if(file_exists($convertedOutput)){
+		if (file_exists($convertedOutput)) {
 			$this->logger->info("Found previous conversion attempt, deleting...");
 			Filesystem::recursiveUnlink($convertedOutput);
 		}
 		$this->newProvider->generate($convertedOutput, $data->getName(), WorldCreationOptions::create()
 			//TODO: defaulting to NORMAL here really isn't very good behaviour, but it's consistent with what we already
 			//did previously; besides, WorldManager checks for unknown generators before this is reached anyway.
-			->setGeneratorClass(GeneratorManager::getInstance()->getGenerator($data->getGenerator())?->getGeneratorClass() ?? Normal::class)
+			->setGeneratorClass(GeneratorManager::getInstance()->getGenerator($data->getGenerator())?->getGeneratorClass() ?? OverworldGenerator::class)
 			->setGeneratorOptions($data->getGeneratorOptions())
 			->setSeed($data->getSeed())
 			->setSpawnPosition($data->getSpawn())
@@ -116,7 +121,8 @@ class FormatConverter{
 		return $this->newProvider->fromPath($convertedOutput, $this->logger);
 	}
 
-	private function populateLevelData(WorldData $data) : void{
+	private function populateLevelData(WorldData $data): void
+	{
 		$this->logger->info("Converting world manifest");
 		$oldData = $this->oldProvider->getWorldData();
 		$data->setDifficulty($oldData->getDifficulty());
@@ -132,7 +138,8 @@ class FormatConverter{
 		//TODO: add more properties as-needed
 	}
 
-	private function convertTerrain(WritableWorldProvider $new) : void{
+	private function convertTerrain(WritableWorldProvider $new): void
+	{
 		$this->logger->info("Calculating chunk count");
 		$count = $this->oldProvider->calculateChunkCount();
 		$this->logger->info("Discovered $count chunks");
@@ -141,11 +148,11 @@ class FormatConverter{
 
 		$start = microtime(true);
 		$thisRound = $start;
-		foreach($this->oldProvider->getAllChunks(true, $this->logger) as $coords => $loadedChunkData){
+		foreach ($this->oldProvider->getAllChunks(true, $this->logger) as $coords => $loadedChunkData) {
 			[$chunkX, $chunkZ] = $coords;
 			$new->saveChunk($chunkX, $chunkZ, $loadedChunkData->getData(), Chunk::DIRTY_FLAGS_ALL);
 			$counter++;
-			if(($counter % $this->chunksPerProgressUpdate) === 0){
+			if (($counter % $this->chunksPerProgressUpdate) === 0) {
 				$time = microtime(true);
 				$diff = $time - $thisRound;
 				$thisRound = $time;

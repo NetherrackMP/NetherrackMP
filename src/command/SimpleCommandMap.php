@@ -28,6 +28,7 @@ use pocketmine\command\defaults\BanCommand;
 use pocketmine\command\defaults\BanIpCommand;
 use pocketmine\command\defaults\BanListCommand;
 use pocketmine\command\defaults\ClearCommand;
+use pocketmine\command\defaults\ClsCommand;
 use pocketmine\command\defaults\DefaultGamemodeCommand;
 use pocketmine\command\defaults\DeopCommand;
 use pocketmine\command\defaults\DifficultyCommand;
@@ -124,7 +125,8 @@ class SimpleCommandMap implements CommandMap
 		$worldConstants = array_keys((new ReflectionClass(World::class))->getConstants());
 		$levelEventConstants = array_keys((new ReflectionClass(LevelEvent::class))->getConstants());
 
-		$this->addHardcodedEnum(new CommandEnum("Boolean", ["true", "false"], false), false);
+		$this->addHardcodedEnum(new CommandEnum("boolean", ["true", "false"], false), false);
+		$this->addHardcodedEnum(new CommandEnum("bool", ["true", "false"], false), false);
 
 		$difficultyOptions = array_filter($worldConstants, fn(string $constant) => str_starts_with($constant, "DIFFICULTY_"));
 		$difficultyOptions = array_map(fn(string $difficultyString) => substr($difficultyString, strlen("DIFFICULTY_")), $difficultyOptions);
@@ -180,48 +182,54 @@ class SimpleCommandMap implements CommandMap
 
 	private function setDefaultCommands(): void
 	{
-		$this->registerAll("pocketmine", [
-			new BanCommand(),
-			new BanIpCommand(),
-			new BanListCommand(),
-			new ClearCommand(),
-			new DefaultGamemodeCommand(),
-			new DeopCommand(),
-			new DifficultyCommand(),
-			new DumpMemoryCommand(),
-			new EffectCommand(),
-			new EnchantCommand(),
-			new GamemodeCommand(),
-			new GarbageCollectorCommand(),
-			new GiveCommand(),
-			new HelpCommand(),
-			new KickCommand(),
-			new KillCommand(),
-			new ListCommand(),
-			new MeCommand(),
-			new OpCommand(),
-			new PardonCommand(),
-			new PardonIpCommand(),
-			new ParticleCommand(),
-			new PluginsCommand(),
-			new SaveCommand(),
-			new SaveOffCommand(),
-			new SaveOnCommand(),
-			new SayCommand(),
-			new SeedCommand(),
-			new SetWorldSpawnCommand(),
-			new SpawnpointCommand(),
-			new StatusCommand(),
-			new StopCommand(),
-			new TeleportCommand(),
-			new TellCommand(),
-			new TimeCommand(),
-			new TimingsCommand(),
-			new TitleCommand(),
-			new TransferServerCommand(),
-			new VersionCommand(),
-			new WhitelistCommand()
-		]);
+		$list = [];
+		foreach ([
+					 new BanCommand(),
+					 new BanIpCommand(),
+					 new BanListCommand(),
+					 new ClearCommand(),
+					 new ClsCommand(),
+					 new DefaultGamemodeCommand(),
+					 new DeopCommand(),
+					 new DifficultyCommand(),
+					 new DumpMemoryCommand(),
+					 new EffectCommand(),
+					 new EnchantCommand(),
+					 new GamemodeCommand(),
+					 new GarbageCollectorCommand(),
+					 new GiveCommand(),
+					 new HelpCommand(),
+					 new KickCommand(),
+					 new KillCommand(),
+					 new ListCommand(),
+					 new MeCommand(),
+					 new OpCommand(),
+					 new PardonCommand(),
+					 new PardonIpCommand(),
+					 new ParticleCommand(),
+					 new PluginsCommand(),
+					 new SaveCommand(),
+					 new SaveOffCommand(),
+					 new SaveOnCommand(),
+					 new SayCommand(),
+					 new SeedCommand(),
+					 new SetWorldSpawnCommand(),
+					 new SpawnpointCommand(),
+					 new StatusCommand(),
+					 new StopCommand(),
+					 new TeleportCommand(),
+					 new TellCommand(),
+					 new TimeCommand(),
+					 new TimingsCommand(),
+					 new TitleCommand(),
+					 new TransferServerCommand(),
+					 new VersionCommand(),
+					 new WhitelistCommand()
+				 ] as $cmd) {
+			if ($this->server->getConfigGroup()->getPropertyBool("commands." . $cmd->getName() . ".enabled", true))
+				$list[] = $cmd;
+		}
+		$this->registerAll("pocketmine", $list);
 	}
 
 	public function registerAll(string $fallbackPrefix, array $commands): void

@@ -15,7 +15,7 @@ if($php -ne ""){
 	$binary = "php"
 }else{
 	echo "Couldn't find a PHP binary in system PATH or $pwd\bin\php"
-	echo "Please refer to the installation instructions at https://doc.pmmp.io/en/rtfd/installation.html"
+	echo "Please refer to the installation instructions at https://github.com/pmmp/PHP-Binaries/releases/latest"
 	pause
 	exit 1
 }

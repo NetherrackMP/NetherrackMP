@@ -17,7 +17,7 @@ if exist bin\php\php.exe (
 
 if "%PHP_BINARY%"=="" (
 	echo Couldn't find a PHP binary in system PATH or "%~dp0bin\php"
-	echo Please refer to the installation instructions at https://doc.pmmp.io/en/rtfd/installation.html
+	echo Please refer to the installation instructions at https://github.com/pmmp/PHP-Binaries/releases/latest
 	pause
 	exit 1
 )
@@ -26,7 +26,7 @@ if exist Netherrack-MP.phar (
 	set NETHERRACK_FILE=Netherrack-MP.phar
 ) else (
 	echo Netherrack-MP.phar not found
-	echo Downloads can be found at https://github.com/NetherrackMP/NetherrackMP/releases
+	echo Downloads can be found at https://github.com/NetherrackMP/NetherrackMP/releases/latest
 	pause
 	exit 1
 )

@@ -31,9 +31,11 @@ use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use function count;
 
-class EnchantCommand extends VanillaCommand{
+class EnchantCommand extends VanillaCommand
+{
 
-	public function __construct(){
+	public function __construct()
+	{
 		parent::__construct(
 			"enchant",
 			KnownTranslationFactory::pocketmine_command_enchant_description(),
@@ -45,33 +47,35 @@ class EnchantCommand extends VanillaCommand{
 		]);
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(count($args) < 2){
+	public function execute(CommandSender $sender, string $commandLabel, array $args)
+	{
+		if (count($args) < 2) {
 			throw new InvalidCommandSyntaxException();
 		}
 
 		$player = $this->fetchPermittedPlayerTarget($sender, $args[0], DefaultPermissionNames::COMMAND_ENCHANT_SELF, DefaultPermissionNames::COMMAND_ENCHANT_OTHER);
-		if($player === null){
+		if ($player === null) {
 			return true;
 		}
 
 		$item = $player->getInventory()->getItemInHand();
 
-		if($item->isNull()){
+		if ($item->isNull()) {
 			$sender->sendMessage(KnownTranslationFactory::commands_enchant_noItem());
 			return true;
 		}
 
 		$enchantment = StringToEnchantmentParser::getInstance()->parse($args[1]);
-		if($enchantment === null){
+		if ($enchantment === null) {
 			$sender->sendMessage(KnownTranslationFactory::commands_enchant_notFound($args[1]));
 			return true;
 		}
 
 		$level = 1;
-		if(isset($args[2])){
-			$level = $this->getBoundedInt($sender, $args[2], 1, 255);
-			if($level === null){
+		if (isset($args[2])) {
+			$lvl = $sender->getServer()->getConfigGroup()->getProperty("commands.enchant.max-level", 255);
+			$level = $this->getBoundedInt($sender, $args[2], 1, is_int($lvl) ? $lvl : $enchantment->getMaxLevel());
+			if ($level === null) {
 				return false;
 			}
 		}

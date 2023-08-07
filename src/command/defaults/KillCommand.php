@@ -37,8 +37,7 @@ class KillCommand extends VanillaCommand{
 		parent::__construct(
 			"kill",
 			KnownTranslationFactory::pocketmine_command_kill_description(),
-			KnownTranslationFactory::pocketmine_command_kill_usage(),
-			["suicide"]
+			KnownTranslationFactory::pocketmine_command_kill_usage()
 		);
 		$this->setPermissions([DefaultPermissionNames::COMMAND_KILL_SELF, DefaultPermissionNames::COMMAND_KILL_OTHER]);
 	}

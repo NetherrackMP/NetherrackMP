@@ -81,10 +81,6 @@ use pocketmine\network\mcpe\protocol\TransferPacket;
 use pocketmine\network\mcpe\protocol\types\AbilitiesData;
 use pocketmine\network\mcpe\protocol\types\AbilitiesLayer;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
-use pocketmine\network\mcpe\protocol\types\command\CommandData;
-use pocketmine\network\mcpe\protocol\types\command\CommandEnum;
-use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
-use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\network\mcpe\protocol\types\command\CommandPermissions;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
@@ -940,6 +936,11 @@ class NetworkSession
 		$this->sendDataPacket(SetSpawnPositionPacket::worldSpawn(BlockPosition::fromVector3($newSpawn), DimensionIds::OVERWORLD));
 	}
 
+	public function syncWorldWeather(int $weather): void
+	{
+		//$this->sendDataPacket(SetSpawnPositionPacket::worldSpawn(BlockPosition::fromVector3($newSpawn), DimensionIds::OVERWORLD));
+	}
+
 	public function syncGameMode(GameMode $mode, bool $isRollback = false): void
 	{
 		$this->sendDataPacket(SetPlayerGameTypePacket::create($this->typeConverter->coreGameModeToProtocol($mode)));
@@ -1019,6 +1020,7 @@ class NetworkSession
 	{
 		$map = $this->server->getCommandMap();
 		$player = $this->player;
+		if (!$player) return;
 		$commandData = [];
 		foreach ($this->server->getCommandMap()->getCommands() as $command) {
 			if (
@@ -1134,7 +1136,7 @@ class NetworkSession
 			$this->syncWorldTime($world->getTime());
 			$this->syncWorldDifficulty($world->getDifficulty());
 			$this->syncWorldSpawnPoint($world->getSpawnLocation());
-			//TODO: weather needs to be synced here (when implemented)
+			//$this->syncWorldWeather($world->getWeather());
 		}
 	}
 
