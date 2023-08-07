@@ -31,7 +31,7 @@
 #### Can I contribute?
 - You can contribute to Netherrack by creating a pull request on [this link](https://github.com/NetherrackMP/NetherrackMP/pulls)
 - This will get you the role @Contributors on discord
-#### How to I join to discord?
+#### How do I join to discord?
 - Click [this link](https://discord.gg/PexPaTmHnB)
 
 ## Features

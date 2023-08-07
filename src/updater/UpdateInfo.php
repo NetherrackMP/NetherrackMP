@@ -27,27 +27,14 @@ namespace pocketmine\updater;
  * Model class for JsonMapper to represent the information returned from the updater API.
  * @link https://update.pmmp.io/api
  */
-final class UpdateInfo{
-	/** @required */
-	public string $php_version;
-	/** @required */
-	public string $base_version;
-	/** @required */
-	public bool $is_dev;
-	/** @required */
-	public string $channel;
-	/** @required */
-	public string $git_commit;
-	/** @required */
-	public string $mcpe_version;
-	/** @required */
-	public int $build;
-	/** @required */
-	public int $date;
-	/** @required */
-	public string $details_url;
-	/** @required */
-	public string $download_url;
-	/** @required */
-	public string $source_url;
+final class UpdateInfo
+{
+	public function __construct(
+		public string $base_version,
+		public string $date,
+		public string $details_url,
+		public string $download_url
+	)
+	{
+	}
 }

@@ -33,7 +33,8 @@ class SaveOnCommand extends VanillaCommand{
 	public function __construct(){
 		parent::__construct(
 			"save-on",
-			KnownTranslationFactory::pocketmine_command_saveon_description()
+			KnownTranslationFactory::pocketmine_command_saveon_description(),
+			"/save-on"
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_SAVE_ENABLE);
 	}

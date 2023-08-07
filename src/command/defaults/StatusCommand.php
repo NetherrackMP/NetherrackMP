@@ -39,7 +39,8 @@ class StatusCommand extends VanillaCommand{
 	public function __construct(){
 		parent::__construct(
 			"status",
-			KnownTranslationFactory::pocketmine_command_status_description()
+			KnownTranslationFactory::pocketmine_command_status_description(),
+			"/status"
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_STATUS);
 	}

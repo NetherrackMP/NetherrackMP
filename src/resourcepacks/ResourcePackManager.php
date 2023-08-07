@@ -42,7 +42,8 @@ use function strlen;
 use function strtolower;
 use const DIRECTORY_SEPARATOR;
 
-class ResourcePackManager{
+class ResourcePackManager
+{
 	private string $path;
 	private bool $serverForceResources = false;
 
@@ -61,39 +62,39 @@ class ResourcePackManager{
 	/**
 	 * @param string $path Path to resource-packs directory.
 	 */
-	public function __construct(string $path, \Logger $logger){
+	public function __construct(string $path, \Logger $logger)
+	{
 		$this->path = $path;
 
-		if(!file_exists($this->path)){
+		if (!file_exists($this->path)) {
 			$logger->debug("Resource packs path $path does not exist, creating directory");
 			mkdir($this->path);
-		}elseif(!is_dir($this->path)){
+		} elseif (!is_dir($this->path)) {
 			throw new \InvalidArgumentException("Resource packs path $path exists and is not a directory");
 		}
 
 		$resourcePacksYml = Path::join($this->path, "resource_packs.yml");
-		if(!file_exists($resourcePacksYml)){
+		if (!file_exists($resourcePacksYml)) {
 			copy(Path::join(\pocketmine\RESOURCE_PATH, "resource_packs.yml"), $resourcePacksYml);
 		}
 
 		$resourcePacksConfig = new Config($resourcePacksYml, Config::YAML, []);
 
-		$this->serverForceResources = (bool) $resourcePacksConfig->get("force_resources", false);
-
-		$logger->info("Loading resource packs...");
+		$this->serverForceResources = (bool)$resourcePacksConfig->get("force_resources", false);
 
 		$resourceStack = $resourcePacksConfig->get("resource_stack", []);
-		if(!is_array($resourceStack)){
+		if (!empty($resourceStack)) $logger->info("Loading resource packs...");
+		if (!is_array($resourceStack)) {
 			throw new \InvalidArgumentException("\"resource_stack\" key should contain a list of pack names");
 		}
 
-		foreach($resourceStack as $pos => $pack){
-			if(!is_string($pack) && !is_int($pack) && !is_float($pack)){
+		foreach ($resourceStack as $pos => $pack) {
+			if (!is_string($pack) && !is_int($pack) && !is_float($pack)) {
 				$logger->critical("Found invalid entry in resource pack list at offset $pos of type " . gettype($pack));
 				continue;
 			}
-			$pack = (string) $pack;
-			try{
+			$pack = (string)$pack;
+			try {
 				$newPack = $this->loadPackFromPath(Path::join($this->path, $pack));
 
 				$this->resourcePacks[] = $newPack;
@@ -101,19 +102,19 @@ class ResourcePackManager{
 				$this->uuidList[$index] = $newPack;
 
 				$keyPath = Path::join($this->path, $pack . ".key");
-				if(file_exists($keyPath)){
-					try{
+				if (file_exists($keyPath)) {
+					try {
 						$key = Filesystem::fileGetContents($keyPath);
-					}catch(\RuntimeException $e){
+					} catch (\RuntimeException $e) {
 						throw new ResourcePackException("Could not read encryption key file: " . $e->getMessage(), 0, $e);
 					}
 					$key = rtrim($key, "\r\n");
-					if(strlen($key) !== 32){
+					if (strlen($key) !== 32) {
 						throw new ResourcePackException("Invalid encryption key length, must be exactly 32 bytes");
 					}
 					$this->encryptionKeys[$index] = $key;
 				}
-			}catch(ResourcePackException $e){
+			} catch (ResourcePackException $e) {
 				$logger->critical("Could not load resource pack \"$pack\": " . $e->getMessage());
 			}
 		}
@@ -121,17 +122,18 @@ class ResourcePackManager{
 		$logger->debug("Successfully loaded " . count($this->resourcePacks) . " resource packs");
 	}
 
-	private function loadPackFromPath(string $packPath) : ResourcePack{
-		if(!file_exists($packPath)){
+	private function loadPackFromPath(string $packPath): ResourcePack
+	{
+		if (!file_exists($packPath)) {
 			throw new ResourcePackException("File or directory not found");
 		}
-		if(is_dir($packPath)){
+		if (is_dir($packPath)) {
 			throw new ResourcePackException("Directory resource packs are unsupported");
 		}
 
 		//Detect the type of resource pack.
 		$info = new \SplFileInfo($packPath);
-		switch($info->getExtension()){
+		switch ($info->getExtension()) {
 			case "zip":
 			case "mcpack":
 				return new ZippedResourcePack($packPath);
@@ -143,14 +145,16 @@ class ResourcePackManager{
 	/**
 	 * Returns the directory which resource packs are loaded from.
 	 */
-	public function getPath() : string{
+	public function getPath(): string
+	{
 		return $this->path . DIRECTORY_SEPARATOR;
 	}
 
 	/**
 	 * Returns whether players must accept resource packs in order to join.
 	 */
-	public function resourcePacksRequired() : bool{
+	public function resourcePacksRequired(): bool
+	{
 		return $this->serverForceResources;
 	}
 
@@ -158,7 +162,8 @@ class ResourcePackManager{
 	 * Returns an array of resource packs in use, sorted in order of priority.
 	 * @return ResourcePack[]
 	 */
-	public function getResourceStack() : array{
+	public function getResourceStack(): array
+	{
 		return $this->resourcePacks;
 	}
 
@@ -170,12 +175,13 @@ class ResourcePackManager{
 	 * @param ResourcePack[] $resourceStack
 	 * @phpstan-param list<ResourcePack> $resourceStack
 	 */
-	public function setResourceStack(array $resourceStack) : void{
+	public function setResourceStack(array $resourceStack): void
+	{
 		$uuidList = [];
 		$resourcePacks = [];
-		foreach($resourceStack as $pack){
+		foreach ($resourceStack as $pack) {
 			$uuid = strtolower($pack->getPackId());
-			if(isset($uuidList[$uuid])){
+			if (isset($uuidList[$uuid])) {
 				throw new \InvalidArgumentException("Cannot load two resource pack with the same UUID ($uuid)");
 			}
 			$uuidList[$uuid] = $pack;
@@ -188,7 +194,8 @@ class ResourcePackManager{
 	/**
 	 * Returns the resource pack matching the specified UUID string, or null if the ID was not recognized.
 	 */
-	public function getPackById(string $id) : ?ResourcePack{
+	public function getPackById(string $id): ?ResourcePack
+	{
 		return $this->uuidList[strtolower($id)] ?? null;
 	}
 
@@ -196,14 +203,16 @@ class ResourcePackManager{
 	 * Returns an array of pack IDs for packs currently in use.
 	 * @return string[]
 	 */
-	public function getPackIdList() : array{
+	public function getPackIdList(): array
+	{
 		return array_keys($this->uuidList);
 	}
 
 	/**
 	 * Returns the key with which the pack was encrypted, or null if the pack has no key.
 	 */
-	public function getPackEncryptionKey(string $id) : ?string{
+	public function getPackEncryptionKey(string $id): ?string
+	{
 		return $this->encryptionKeys[strtolower($id)] ?? null;
 	}
 
@@ -211,17 +220,18 @@ class ResourcePackManager{
 	 * Sets the encryption key to use for decrypting the specified resource pack. The pack will **NOT** be decrypted by
 	 * PocketMine-MP; the key is simply passed to the client to allow it to decrypt the pack after downloading it.
 	 */
-	public function setPackEncryptionKey(string $id, ?string $key) : void{
+	public function setPackEncryptionKey(string $id, ?string $key): void
+	{
 		$id = strtolower($id);
-		if($key === null){
+		if ($key === null) {
 			//allow deprovisioning keys for resource packs that have been removed
 			unset($this->encryptionKeys[$id]);
-		}elseif(isset($this->uuidList[$id])){
-			if(strlen($key) !== 32){
+		} elseif (isset($this->uuidList[$id])) {
+			if (strlen($key) !== 32) {
 				throw new \InvalidArgumentException("Encryption key must be exactly 32 bytes long");
 			}
 			$this->encryptionKeys[$id] = $key;
-		}else{
+		} else {
 			throw new \InvalidArgumentException("Unknown pack ID $id");
 		}
 	}

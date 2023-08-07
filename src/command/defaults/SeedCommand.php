@@ -33,7 +33,8 @@ class SeedCommand extends VanillaCommand{
 	public function __construct(){
 		parent::__construct(
 			"seed",
-			KnownTranslationFactory::pocketmine_command_seed_description()
+			KnownTranslationFactory::pocketmine_command_seed_description(),
+			"/seed"
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_SEED);
 	}

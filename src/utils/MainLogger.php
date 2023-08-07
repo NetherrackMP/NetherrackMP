@@ -179,9 +179,9 @@ class MainLogger extends AttachableThreadSafeLogger implements \BufferedLogger{
 
 		$thread = NativeThread::getCurrentThread();
 		if($thread === null){
-			$threadName = $this->mainThreadName . " thread";
+			$threadName = $this->mainThreadName;
 		}elseif($thread instanceof Thread || $thread instanceof Worker){
-			$threadName = $thread->getThreadName() . " thread";
+			$threadName = $thread->getThreadName();
 		}else{
 			$threadName = (new \ReflectionClass($thread))->getShortName() . " thread";
 		}

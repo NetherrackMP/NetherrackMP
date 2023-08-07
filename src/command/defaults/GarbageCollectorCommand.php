@@ -37,7 +37,8 @@ class GarbageCollectorCommand extends VanillaCommand{
 	public function __construct(){
 		parent::__construct(
 			"gc",
-			KnownTranslationFactory::pocketmine_command_gc_description()
+			KnownTranslationFactory::pocketmine_command_gc_description(),
+			"/gc"
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_GC);
 	}

@@ -2336,12 +2336,6 @@ final class KnownTranslationFactory{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_AUTHWARNING, []);
 	}
 
-	public static function pocketmine_server_defaultGameMode(Translatable|string $param0) : Translatable{
-		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_DEFAULTGAMEMODE, [
-			0 => $param0,
-		]);
-	}
-
 	public static function pocketmine_server_devBuild_error1(Translatable|string $param0) : Translatable{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_DEVBUILD_ERROR1, [
 			0 => $param0,
@@ -2368,26 +2362,6 @@ final class KnownTranslationFactory{
 		]);
 	}
 
-	public static function pocketmine_server_devBuild_warning1(Translatable|string $param0) : Translatable{
-		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_DEVBUILD_WARNING1, [
-			0 => $param0,
-		]);
-	}
-
-	public static function pocketmine_server_devBuild_warning2() : Translatable{
-		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_DEVBUILD_WARNING2, []);
-	}
-
-	public static function pocketmine_server_devBuild_warning3() : Translatable{
-		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_DEVBUILD_WARNING3, []);
-	}
-
-	public static function pocketmine_server_donate(Translatable|string $param0) : Translatable{
-		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_DONATE, [
-			0 => $param0,
-		]);
-	}
-
 	public static function pocketmine_server_forcingShutdown() : Translatable{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_FORCINGSHUTDOWN, []);
 	}
@@ -2405,12 +2379,6 @@ final class KnownTranslationFactory{
 			1 => $param1,
 			2 => $param2,
 			3 => $param3,
-		]);
-	}
-
-	public static function pocketmine_server_license(Translatable|string $param0) : Translatable{
-		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_LICENSE, [
-			0 => $param0,
 		]);
 	}
 
@@ -2453,12 +2421,6 @@ final class KnownTranslationFactory{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_QUERY_RUNNING, [
 			0 => $param0,
 			1 => $param1,
-		]);
-	}
-
-	public static function pocketmine_server_start(Translatable|string $param0) : Translatable{
-		return new Translatable(KnownTranslationKeys::POCKETMINE_SERVER_START, [
-			0 => $param0,
 		]);
 	}
 

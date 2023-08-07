@@ -222,6 +222,7 @@ class SimpleCommandMap implements CommandMap
 			'tp' => '/tp <player: target> [position: x y z] [yaw: float] [pitch: float] OR /tp <player: target> <destination: target>',
 			'transferserver' => '/transferserver <address: string> [port: int]',
 			'version' => '/version [plugin: string]',
+
 			'whitelist' => '/whitelist add [player: target] OR /whitelist remove [player: target] OR /whitelist <on|off|list|reload>',
 		];
 

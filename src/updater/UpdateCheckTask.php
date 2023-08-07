@@ -25,59 +25,56 @@ namespace pocketmine\updater;
 
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\utils\Internet;
-use function is_array;
-use function is_string;
 use function json_decode;
 
-class UpdateCheckTask extends AsyncTask{
+class UpdateCheckTask extends AsyncTask
+{
 	private const TLS_KEY_UPDATER = "updater";
 
 	private string $error = "Unknown error";
 
 	public function __construct(
-		UpdateChecker $updater,
-		private string $endpoint,
-		private string $channel
-	){
+		UpdateChecker  $updater,
+		private string $endpoint
+	)
+	{
 		$this->storeLocal(self::TLS_KEY_UPDATER, $updater);
 	}
 
-	public function onRun() : void{
+	public function onRun(): void
+	{
 		$error = "";
-		$response = Internet::getURL($this->endpoint . "?channel=" . $this->channel, 4, [], $error);
+		$response = Internet::getURL($this->endpoint, 5, [], $error);
 		$this->error = $error;
-
-		if($response !== null){
-			$response = json_decode($response->getBody(), true);
-			if(is_array($response)){
-				if(isset($response["error"]) && is_string($response["error"])){
-					$this->error = $response["error"];
-				}else{
-					$mapper = new \JsonMapper();
-					$mapper->bExceptionOnMissingData = true;
-					$mapper->bEnforceMapType = false;
-					try{
-						/** @var UpdateInfo $responseObj */
-						$responseObj = $mapper->map($response, new UpdateInfo());
-						$this->setResult($responseObj);
-					}catch(\JsonMapper_Exception $e){
-						$this->error = "Invalid JSON response data: " . $e->getMessage();
-					}
-				}
-			}else{
-				$this->error = "Invalid response data";
+		$response = json_decode($response->getBody(), true);
+		if (isset($response["message"])) {
+			$this->error = $response["message"];
+			return;
+		}
+		$asset = null;
+		foreach ($response["assets"] as $a) {
+			if ($a["name"] == "Netherrack-MP.phar") {
+				$asset = $a["browser_download_url"];
+				break;
 			}
 		}
+		$this->setResult(new UpdateInfo(
+			$response["tag_name"],
+			$response["published_at"],
+			$response["url"],
+			$asset
+		));
 	}
 
-	public function onCompletion() : void{
+	public function onCompletion(): void
+	{
 		/** @var UpdateChecker $updater */
 		$updater = $this->fetchLocal(self::TLS_KEY_UPDATER);
-		if($this->hasResult()){
+		if ($this->hasResult()) {
 			/** @var UpdateInfo $response */
 			$response = $this->getResult();
 			$updater->checkUpdateCallback($response);
-		}else{
+		} else {
 			$updater->checkUpdateError($this->error);
 		}
 	}
