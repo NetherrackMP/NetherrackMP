@@ -359,6 +359,7 @@ class MemoryManager{
 			'_SESSION' => true
 		];
 
+		/** @phpstan-var array<string, mixed> $GLOBALS */
 		foreach(Utils::stringifyKeys($GLOBALS) as $varName => $value){
 			if(isset($ignoredGlobals[$varName])){
 				continue;

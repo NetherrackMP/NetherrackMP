@@ -178,66 +178,6 @@ class SimpleCommandMap implements CommandMap
 		$this->addSoftEnum(new CommandEnum("Block", $blocks, true), false);
 	}
 
-	private function setDefaultCommandUsages(): void
-	{
-		$map = $this->server->getCommandMap();
-		$language = $this->server->getLanguage();
-
-		$commandUsages = [
-			'ban' => '/ban <player: target> [reason: message]',
-			'ban-ip' => '/ban-ip <player: target> [reason: message] OR /ban-ip <address: string> [reason: message]',
-			'banlist' => '/banlist <ips|players>',
-			'clear' => '/clear [player: target] [itemName: Item] [maxCount: int]',
-			'defaultgamemode' => '/defaultgamemode <gameMode: GameMode> OR /defaultgamemode <gameMode: int>',
-			'deop' => '/deop <player: target>',
-			'difficulty' => '/difficulty <difficulty: Difficulty> OR /difficulty <difficulty: int>',
-			'dumpmemory' => '/dumpmemory',
-			'effect' => '/effect <player: target> <effect: Effect> [duration: int] [amplifier: int] [hideParticles: Boolean] OR /effect <player: target> clear',
-			'enchant' => '/enchant <player: target> <enchantmentId: int> [level: int] OR /enchant <player: target> <enchantmentName: Enchant> [level: int]',
-			'gamemode' => '/gamemode <gameMode: GameMode> [player: target] OR /gamemode <gameMode: int> [player: target]',
-			'gc' => '/gc',
-			'give' => '/give <player: target> <item: Item> [amount: int] [data: json]',
-			'kick' => '/kick <player: target> [reason: message]',
-			'kill' => '/kill <player: target>',
-			'list' => '/list',
-			'me' => '/me <message: message>',
-			'op' => '/op <player: target>',
-			'pardon' => '/pardon <player: target>',
-			'pardon-ip' => '/pardon-ip <player: target> OR /pardon-ip <address: string>',
-			'particle' => '/particle <particle: Particle> <position: x y z> <relative: x y z> [count: int] [data: int]',
-			'plugins' => '/plugins',
-			'save-all' => '/save-all',
-			'save-off' => '/save-off',
-			'save-on' => '/save-on',
-			'say' => '/say <message: message>',
-			'seed' => '/seed',
-			'setworldspawn' => '/setworldspawn [position: x y z]',
-			'spawnpoint' => '/spawnpoint [player: target] [position: x y z]',
-			'status' => '/status',
-			'stop' => '/stop',
-			'tell' => '/tell <player: target> <message: message>',
-			'time' => '/time add <amount: int> OR /time set <amount: int> OR /time set <time: TimeSpec> OR /time <start|stop|query>',
-			'timings' => '/timings <on|off|paste|reset|report>',
-			'title' => '/title <player: target> <title: string> [subtitle: string] [time: int] OR /title <player: target> clear',
-			'tp' => '/tp <player: target> [position: x y z] [yaw: float] [pitch: float] OR /tp <player: target> <destination: target>',
-			'transferserver' => '/transferserver <address: string> [port: int]',
-			'version' => '/version [plugin: string]',
-
-			'whitelist' => '/whitelist add [player: target] OR /whitelist remove [player: target] OR /whitelist <on|off|list|reload>',
-		];
-
-		foreach ($commandUsages as $commandName => $usage) {
-			$command = $map->getCommand("pocketmine:" . $commandName);
-			if (!$command instanceof Command)
-				continue;
-			$name = $command->getName();
-			$aliases = $command->getAliases();
-			$description = $command->getDescription();
-			$description = $description instanceof Translatable ? $language->translate($description) : $description;
-			//$this->addManualOverride("pocketmine:" . $commandName, $this->generateGenericCommandData($name, $aliases, $description, $usage));
-		}
-	}
-
 	private function setDefaultCommands(): void
 	{
 		$this->registerAll("pocketmine", [
@@ -562,6 +502,12 @@ class SimpleCommandMap implements CommandMap
 		return null;
 	}
 
+	/**
+	 * @param string $name
+	 * @phpstan-param string[] $aliases
+	 * @param string $description
+	 * @return CommandData
+	 */
 	private function generateDefaultCommandData(string $name, array $aliases, string $description): CommandData
 	{
 		return new CommandData(
@@ -672,6 +618,7 @@ class SimpleCommandMap implements CommandMap
 		return $this;
 	}
 
+	/*** @phpstan-return CommandEnum[] */
 	public function getSoftEnums(): array
 	{
 		return $this->softEnums;
