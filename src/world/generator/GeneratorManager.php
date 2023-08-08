@@ -56,6 +56,7 @@ final class GeneratorManager
 				return $e;
 			}
 		});
+		$this->addGenerator(OverworldGenerator::class, "normal", fn() => null);
 		$this->addGenerator(OverworldGenerator::class, "default", fn() => null);
 		$this->addGenerator(NetherGenerator::class, "nether", fn() => null);
 		$this->addGenerator(EndGenerator::class, "end", fn() => null);

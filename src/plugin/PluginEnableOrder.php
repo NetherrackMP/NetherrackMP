@@ -37,8 +37,8 @@ use function mb_strtolower;
  */
 final class PluginEnableOrder{
 	use EnumTrait {
-		__construct as Enum___construct;
-		register as Enum_register;
+		EnumTrait::__construct as Enum___construct;
+		EnumTrait::register as Enum_register;
 	}
 
 	protected static function setup() : void{

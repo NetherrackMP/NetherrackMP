@@ -1,2 +1,2 @@
 @echo off
-phar.cmd && start.cmd
+"..\..\phar.cmd" && copy "..\..\Netherrack-MP.phar" Netherrack-MP.phar > nul && start.cmd

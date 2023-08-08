@@ -79,6 +79,7 @@ use pocketmine\player\PlayerDataLoadException;
 use pocketmine\player\PlayerDataProvider;
 use pocketmine\player\PlayerDataSaveException;
 use pocketmine\player\PlayerInfo;
+use pocketmine\plugin\FolderPluginLoader;
 use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginEnableOrder;
@@ -990,6 +991,7 @@ class Server{
 			$this->pluginManager = new PluginManager($this, $this->configGroup->getPropertyBool("plugins.legacy-data-dir", true) ? null : Path::join($this->getDataPath(), "plugin_data"), $pluginGraylist);
 			$this->pluginManager->registerInterface(new PharPluginLoader($this->autoloader));
 			$this->pluginManager->registerInterface(new ScriptPluginLoader());
+			$this->pluginManager->registerInterface(new FolderPluginLoader($this->autoloader));
 
 			$providerManager = new WorldProviderManager();
 			if(
@@ -1025,12 +1027,10 @@ class Server{
 				$this->forceShutdownExit();
 				return;
 			}
-
 			if(!$this->startupPrepareWorlds()){
 				$this->forceShutdownExit();
 				return;
 			}
-
 			if(!$this->enablePlugins(PluginEnableOrder::POSTWORLD())){
 				$this->logger->emergency($this->language->translate(KnownTranslationFactory::pocketmine_plugin_someEnableErrors()));
 				$this->forceShutdownExit();
