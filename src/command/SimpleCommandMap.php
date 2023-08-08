@@ -403,6 +403,7 @@ class SimpleCommandMap implements CommandMap
 	{
 		$language = $player->getLanguage();
 		$name = $command->getName();
+		$name = $name instanceof Translatable ? $language->translate($name) : $name;
 		$aliases = $command->getAliases();
 		$description = $command->getDescription();
 		$description = $description instanceof Translatable ? $language->translate($description) : $description;

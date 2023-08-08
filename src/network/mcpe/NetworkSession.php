@@ -1039,15 +1039,17 @@ class NetworkSession
 	{
 		$map = $this->server->getCommandMap();
 		$player = $this->player;
-		if (!$player) return;
+		if (!$player instanceof Player) return;
 		$commandData = [];
 		foreach ($this->server->getCommandMap()->getCommands() as $command) {
+			$name = $command->getName();
+			$name = $name instanceof Translatable ? $player->getLanguage()->translate($name) : $name;
 			if (
-				isset($commandData[$command->getName()]) ||
+				isset($commandData[$name]) ||
 				$command->getLabel() === "help" ||
 				!$command->testPermissionSilent($player)
 			) continue;
-			$commandData[$command->getLabel()] = $map->generatePlayerSpecificCommandData($command, $this->player);
+			$commandData[$name] = $map->generatePlayerSpecificCommandData($command, $this->player);
 		}
 		$this->sendDataPacket(AvailableCommandsPacket::create($commandData, $map->getHardcodedEnums(), $map->getSoftEnums(), $map->getEnumConstraints()));
 	}
