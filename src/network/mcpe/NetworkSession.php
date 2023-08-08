@@ -55,6 +55,7 @@ use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
 use pocketmine\network\mcpe\protocol\ChunkRadiusUpdatedPacket;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\DisconnectPacket;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
 use pocketmine\network\mcpe\protocol\MovePlayerPacket;
 use pocketmine\network\mcpe\protocol\NetworkChunkPublisherUpdatePacket;
@@ -83,6 +84,7 @@ use pocketmine\network\mcpe\protocol\types\AbilitiesLayer;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\network\mcpe\protocol\types\command\CommandPermissions;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
+use pocketmine\network\mcpe\protocol\types\LevelEvent;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 use pocketmine\network\mcpe\protocol\UpdateAbilitiesPacket;
@@ -104,6 +106,7 @@ use pocketmine\utils\BinaryStream;
 use pocketmine\utils\ObjectSet;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\Position;
+use pocketmine\world\World;
 use function array_map;
 use function base64_encode;
 use function bin2hex;
@@ -938,7 +941,23 @@ class NetworkSession
 
 	public function syncWorldWeather(int $weather): void
 	{
-		//$this->sendDataPacket(SetSpawnPositionPacket::worldSpawn(BlockPosition::fromVector3($newSpawn), DimensionIds::OVERWORLD));
+		$pks = [new LevelEventPacket(), new LevelEventPacket()];
+		$conditions = [0, 5000, 30000, 100000, 5000, 30000, 100000];
+		$pks[0]->eventId = LevelEvent::STOP_RAIN;
+		$pks[0]->eventData = 0;
+		$pks[1]->eventId = LevelEvent::STOP_THUNDER;
+		$pks[1]->eventData = 0;
+
+		if ($weather >= World::WEATHER_LIGHT_THUNDER) {
+			$pks[1]->eventId = LevelEvent::START_THUNDER;
+			$pks[1]->eventData = $conditions[$weather];
+		} else if ($weather > World::WEATHER_CLEAR) {
+			$pks[0]->eventId = LevelEvent::START_RAIN;
+			$pks[0]->eventData = $conditions[$weather];
+			$pks[1]->eventId = LevelEvent::STOP_THUNDER;
+			$pks[1]->eventData = 0;
+		}
+		foreach ($pks as $pk) $this->sendDataPacket($pk);
 	}
 
 	public function syncGameMode(GameMode $mode, bool $isRollback = false): void
@@ -1136,7 +1155,7 @@ class NetworkSession
 			$this->syncWorldTime($world->getTime());
 			$this->syncWorldDifficulty($world->getDifficulty());
 			$this->syncWorldSpawnPoint($world->getSpawnLocation());
-			//$this->syncWorldWeather($world->getWeather());
+			$this->syncWorldWeather($world->getWeather());
 		}
 	}
 

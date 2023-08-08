@@ -274,6 +274,11 @@ class World implements ChunkManager
 	private int $time;
 	public bool $stopTime = false;
 
+	private int $rainTime;
+	private float $rainLevel;
+	private int $lightningTime;
+	private float $lightningLevel;
+
 	private float $sunAnglePercentage = 0.0;
 	private int $skyLightReduction = 0;
 
@@ -478,6 +483,27 @@ class World implements ChunkManager
 		return -1;
 	}
 
+	public static function getWeatherFromString(string $str): int
+	{
+		switch (strtolower(trim($str))) {
+			case "rain":
+			case "moderate_rain":
+				return World::WEATHER_MODERATE_RAIN;
+			case "thunder":
+			case "moderate_thunder":
+				return World::WEATHER_MODERATE_THUNDER;
+			case "light_rain":
+				return World::WEATHER_LIGHT_RAIN;
+			case "light_thunder":
+				return World::WEATHER_LIGHT_THUNDER;
+			case "heavy_rain":
+				return World::WEATHER_HEAVY_RAIN;
+			case "heavy_thunder":
+				return World::WEATHER_HEAVY_THUNDER;
+		}
+		return -1;
+	}
+
 	/**
 	 * Init the default world data
 	 */
@@ -488,19 +514,20 @@ class World implements ChunkManager
 		private AsyncPool             $workerPool
 	)
 	{
+		$worldData = $this->provider->getWorldData();
 		$this->folderName = $name;
 		$this->worldId = self::$worldIdCounter++;
 
-		$this->displayName = $this->provider->getWorldData()->getName();
+		$this->displayName = $worldData->getName();
 		$this->logger = new \PrefixedLogger($server->getLogger(), "World: $this->displayName");
 
 		$this->minY = $this->provider->getWorldMinY();
 		$this->maxY = $this->provider->getWorldMaxY();
 
 		$this->server->getLogger()->info($this->server->getLanguage()->translate(KnownTranslationFactory::pocketmine_level_preparing($this->displayName)));
-		$generator = GeneratorManager::getInstance()->getGenerator($this->provider->getWorldData()->getGenerator()) ??
+		$generator = GeneratorManager::getInstance()->getGenerator($worldData->getGenerator()) ??
 			throw new AssumptionFailedError("WorldManager should already have checked that the generator exists");
-		$generator->validateGeneratorOptions($this->provider->getWorldData()->getGeneratorOptions());
+		$generator->validateGeneratorOptions($worldData->getGeneratorOptions());
 		$this->generator = $generator->getGeneratorClass();
 		$this->chunkPopulationRequestQueue = new \SplQueue();
 		$this->addOnUnloadCallback(function (): void {
@@ -522,7 +549,11 @@ class World implements ChunkManager
 
 		$this->neighbourBlockUpdateQueue = new \SplQueue();
 
-		$this->time = $this->provider->getWorldData()->getTime();
+		$this->time = $worldData->getTime();
+		$this->rainTime = $worldData->getRainTime();
+		$this->rainLevel = $worldData->getRainLevel();
+		$this->lightningTime = $worldData->getLightningTime();
+		$this->lightningLevel = $worldData->getLightningLevel();
 
 		$cfg = $this->server->getConfigGroup();
 		$this->chunkTickRadius = min($this->server->getViewDistance(), max(0, $cfg->getPropertyInt("chunk-ticking.tick-radius", 4)));
@@ -979,6 +1010,27 @@ class World implements ChunkManager
 		if (++$this->sendTimeTicker === 200) {
 			$this->sendTime();
 			$this->sendTimeTicker = 0;
+		}
+
+		if (--$this->rainTime <= 0) {
+			if ($this->isRaining()) {
+				$this->rainTime = rand(12000, 180000);
+				$this->rainLevel = 0;
+			} else {
+				$this->rainTime = rand(12000, 24000);
+				$this->rainLevel = rand(1, 3) * 0.3;
+			}
+			$this->broadcastWeather();
+		}
+		if (--$this->lightningTime <= 0) {
+			if ($this->isRainingLightning()) {
+				$this->lightningTime = rand(12000, 180000);
+				$this->lightningLevel = 0;
+			} else {
+				$this->lightningTime = rand(3600, 15600);
+				$this->lightningLevel = rand(1, 3) * 0.3;
+			}
+			$this->broadcastWeather();
 		}
 
 		$this->unloadChunks();
@@ -1457,9 +1509,14 @@ class World implements ChunkManager
 		$timings = $this->timings->syncDataSave;
 		$timings->startTiming();
 
-		$this->provider->getWorldData()->setTime($this->time);
+		$worldData = $this->provider->getWorldData();
+		$worldData->setTime($this->time);
+		$worldData->setRainTime($this->rainTime);
+		$worldData->setRainLevel($this->rainLevel);
+		$worldData->setLightningTime($this->lightningTime);
+		$worldData->setLightningLevel($this->lightningLevel);
 		$this->saveChunks();
-		$this->provider->getWorldData()->save();
+		$worldData->save();
 
 		$timings->stopTiming();
 
@@ -3241,6 +3298,57 @@ class World implements ChunkManager
 		foreach ($this->players as $player) {
 			$player->getNetworkSession()->syncWorldDifficulty($this->getDifficulty());
 		}
+	}
+
+	public function broadcastWeather(): void
+	{
+		foreach ($this->players as $player)
+			$player->getNetworkSession()->syncWorldWeather($this->getWeather());
+	}
+
+	public function getWeather(): int
+	{
+		$lLevel = $this->lightningLevel * 3; // 0 1 2 3
+		if ($lLevel > 0) return (int)round($lLevel + 3); // 4 5 6
+		return (int)round($this->rainLevel * 3); // 0 1 2 3
+	}
+
+
+	public function setWeather(int $weather, ?int $duration = null, bool $setOther = true): void
+	{
+		if ($weather == 0) { // 0
+			$this->rainLevel = 0;
+			$this->rainTime = rand(12000, 24000);
+			$this->lightningLevel = 0;
+			$this->lightningTime = rand(3600, 15600);
+		} else if ($weather >= self::WEATHER_LIGHT_THUNDER) { // 4 5 6
+			if (is_null($duration)) $duration = rand(3600, 15600);
+			if ($setOther) {
+				$this->rainLevel = 0.3;
+				$this->rainTime = $duration;
+			}
+			$this->lightningLevel = ($weather - 3) * 0.3;
+			$this->lightningTime = $duration;
+		} else if ($weather >= self::WEATHER_LIGHT_RAIN) { // 1 2 3
+			if (is_null($duration)) $duration = rand(12000, 24000);
+			$this->rainLevel = $weather * 0.3;
+			$this->rainTime = $duration;
+			if ($setOther) {
+				$this->lightningLevel = 0;
+				$this->lightningTime = 0;
+			}
+		} else return;
+		$this->broadcastWeather();
+	}
+
+	public function isRaining(): bool
+	{
+		return $this->rainLevel > 0;
+	}
+
+	public function isRainingLightning(): bool
+	{
+		return $this->lightningLevel > 0;
 	}
 
 	private function addChunkHashToPopulationRequestQueue(int $chunkHash): void

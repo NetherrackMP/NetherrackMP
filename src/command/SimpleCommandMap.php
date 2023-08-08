@@ -65,6 +65,7 @@ use pocketmine\command\defaults\TitleCommand;
 use pocketmine\command\defaults\TransferServerCommand;
 use pocketmine\command\defaults\VanillaCommand;
 use pocketmine\command\defaults\VersionCommand;
+use pocketmine\command\defaults\WeatherCommand;
 use pocketmine\command\defaults\WhitelistCommand;
 use pocketmine\command\utils\CommandStringHelper;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
@@ -224,6 +225,7 @@ class SimpleCommandMap implements CommandMap
 					 new TitleCommand(),
 					 new TransferServerCommand(),
 					 new VersionCommand(),
+					 new WeatherCommand(),
 					 new WhitelistCommand()
 				 ] as $cmd) {
 			if ($this->server->getConfigGroup()->getPropertyBool("commands." . $cmd->getName() . ".enabled", true))

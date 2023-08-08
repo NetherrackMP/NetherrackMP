@@ -560,6 +560,10 @@ final class KnownTranslationFactory{
 		return new Translatable(KnownTranslationKeys::COMMANDS_UNBANIP_USAGE, []);
 	}
 
+	public static function commands_weather_usage() : Translatable{
+		return new Translatable(KnownTranslationKeys::COMMANDS_WEATHER_USAGE, []);
+	}
+
 	public static function commands_whitelist_add_success(Translatable|string $param0) : Translatable{
 		return new Translatable(KnownTranslationKeys::COMMANDS_WHITELIST_ADD_SUCCESS, [
 			0 => $param0,
@@ -1540,6 +1544,10 @@ final class KnownTranslationFactory{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_COMMAND_VERSION_USAGE, []);
 	}
 
+	public static function pocketmine_command_weather_description() : Translatable{
+		return new Translatable(KnownTranslationKeys::POCKETMINE_COMMAND_WEATHER_DESCRIPTION, []);
+	}
+
 	public static function pocketmine_command_whitelist_description() : Translatable{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_COMMAND_WHITELIST_DESCRIPTION, []);
 	}
@@ -2042,6 +2050,10 @@ final class KnownTranslationFactory{
 
 	public static function pocketmine_permission_command_version() : Translatable{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_PERMISSION_COMMAND_VERSION, []);
+	}
+
+	public static function pocketmine_permission_command_weather() : Translatable{
+		return new Translatable(KnownTranslationKeys::POCKETMINE_PERMISSION_COMMAND_WEATHER, []);
 	}
 
 	public static function pocketmine_permission_command_whitelist_add() : Translatable{
