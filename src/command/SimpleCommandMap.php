@@ -402,8 +402,7 @@ class SimpleCommandMap implements CommandMap
 	public function generatePlayerSpecificCommandData(Command $command, Player $player): CommandData
 	{
 		$language = $player->getLanguage();
-		$name = $command->getName();
-		$name = $name instanceof Translatable ? $language->translate($name) : $name;
+		$name = $command->getTranslatedName($language);
 		$aliases = $command->getAliases();
 		$description = $command->getDescription();
 		$description = $description instanceof Translatable ? $language->translate($description) : $description;

@@ -82,9 +82,16 @@ abstract class Command
 	 */
 	abstract public function execute(CommandSender $sender, string $commandLabel, array $args);
 
-	public function getName(): Translatable|string
+	public function getName(): string
 	{
-		return $this->name;
+		return $this->__toString();
+	}
+
+	public function getTranslatedName(?Language $language = null): string
+	{
+		return $this->name instanceof Translatable ?
+			($language ?? new Language(Language::FALLBACK_LANGUAGE))->translate($this->name) :
+			$this->name;
 	}
 
 	/**

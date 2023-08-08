@@ -1040,13 +1040,13 @@ class NetworkSession
 		$map = $this->server->getCommandMap();
 		$player = $this->player;
 		if (!$player instanceof Player) return;
+		$language = $player->getLanguage();
 		$commandData = [];
 		foreach ($this->server->getCommandMap()->getCommands() as $command) {
-			$name = $command->getName();
-			$name = $name instanceof Translatable ? $player->getLanguage()->translate($name) : $name;
+			$name = $command->getTranslatedName($language);
 			if (
 				isset($commandData[$name]) ||
-				$command->getLabel() === "help" ||
+				$name === "help" ||
 				!$command->testPermissionSilent($player)
 			) continue;
 			$commandData[$name] = $map->generatePlayerSpecificCommandData($command, $this->player);
