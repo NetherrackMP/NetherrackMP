@@ -34,7 +34,7 @@ for (const file of files) {
 			const translated = (await translate(value, "en", code)).translation;
 			content.push([key, translated]);
 			console.log("+ " + file + ":" + key + ">" + translated);
-		} else content.push([key, value === main[key] && file !== MAIN ? NT + key : value]);
+		} else content.push([key, value/* === main[key] && file !== MAIN ? NT + key : value*/]);
 	}
 	content = content
 		.filter(i => i[0])
@@ -42,7 +42,6 @@ for (const file of files) {
 		.sort();
 	content = [...content.filter(i => i.startsWith("language.")), "", ...content.filter(i => !i.startsWith("language."))];
 	fs.writeFileSync(join(__dirname, file), content.join("\n"));
-	process.exit();
 }
 
 const DT = Date.now() - T;
