@@ -169,7 +169,7 @@ final class EntityFactory
 		}, ['Human']);
 
 		foreach (VanillaItems::SPAWN_ITEMS as $name => $class)
-			$this->register($class, function (World $world, CompoundTag $nbt) use ($class) {
+			$this->register($class, function (World $world, CompoundTag $nbt) use ($class): Entity {
 				return new $class(Helper::parseLocation($nbt, $world), $nbt);
 			}, [implode(" ", array_map("ucfirst", explode("_", $name))), "minecraft:" . $name]);
 	}

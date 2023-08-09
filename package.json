@@ -1,6 +1,0 @@
-{
-	"type": "module",
-	"dependencies": {
-		"bing-translate-api": "^2.9.1"
-	}
-}

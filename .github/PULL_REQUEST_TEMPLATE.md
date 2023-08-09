@@ -26,7 +26,7 @@
 
 Requires translations:
 
-| Name | Value in eng.ini |
+| Name | Value in en_US.ini |
 | :--: | :---: |
 | `foo.bar` | `Foo bar` |
 

@@ -30,6 +30,7 @@ use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\form\Form;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\lang\Language;
 use pocketmine\lang\Translatable;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -820,6 +821,11 @@ class NetworkSession
 			} elseif (!$kickForXUIDMismatch($recordedXUID->getValue())) {
 				$this->logger->debug("XUID match");
 			}
+		}
+
+		if (!in_array(strtolower($this->info->getLocale()), Language::LOCALES)) {
+			$this->disconnect("Invalid locale: " . $this->info->getLocale(), "Invalid locale");
+			return;
 		}
 
 		if (EncryptionContext::$ENABLED) {

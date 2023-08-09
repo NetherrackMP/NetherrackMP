@@ -42,8 +42,8 @@ class ClsCommand extends VanillaCommand
     {
         parent::__construct(
             "clearterminal",
-            KnownTranslationFactory::pocketmine_command_clear_terminal_description(),
-            KnownTranslationFactory::pocketmine_command_clear_terminal_usage(),
+            KnownTranslationFactory::pocketmine_command_clearTerminal_description(),
+            KnownTranslationFactory::pocketmine_command_clearTerminal_usage(),
             ["cls"]
         );
         $this->setPermission(DefaultPermissionNames::COMMAND_CLEARTERMINAL);

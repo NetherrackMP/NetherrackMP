@@ -23,7 +23,8 @@ declare(strict_types=1);
 
 namespace pocketmine\permission;
 
-final class DefaultPermissionNames{
+final class DefaultPermissionNames
+{
 	public const BROADCAST_ADMIN = "pocketmine.broadcast.admin";
 	public const BROADCAST_USER = "pocketmine.broadcast.user";
 	public const COMMAND_BAN_IP = "pocketmine.command.ban.ip";
@@ -41,6 +42,8 @@ final class DefaultPermissionNames{
 	public const COMMAND_ENCHANT_SELF = "pocketmine.command.enchant.self";
 	public const COMMAND_GAMEMODE_OTHER = "pocketmine.command.gamemode.other";
 	public const COMMAND_GAMEMODE_SELF = "pocketmine.command.gamemode.self";
+	public const COMMAND_GAMERULE = "pocketmine.command.gamerule";
+
 	public const COMMAND_GC = "pocketmine.command.gc";
 	public const COMMAND_GIVE_OTHER = "pocketmine.command.give.other";
 	public const COMMAND_GIVE_SELF = "pocketmine.command.give.self";

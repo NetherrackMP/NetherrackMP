@@ -278,7 +278,8 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 
 	/** @phpstan-var positive-int|null  */
 	protected ?int $lineHeight = null;
-	protected string $locale = "en_US";
+	protected string $locale;
+	protected Language $language;
 
 	protected int $startAction = -1;
 	/** @var int[] ID => ticks map */
@@ -306,6 +307,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 		$this->username = $username;
 		$this->displayName = $this->username;
 		$this->locale = $this->playerInfo->getLocale();
+		$this->language = new Language($this->locale);
 
 		$this->uuid = $this->playerInfo->getUuid();
 		$this->xuid = $this->playerInfo instanceof XboxLivePlayerInfo ? $this->playerInfo->getXuid() : "";
@@ -636,7 +638,12 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 	}
 
 	public function getLanguage() : Language{
-		return $this->server->getLanguage();
+		return $this->language;
+	}
+
+	public function setLanguage(Language $language): void
+	{
+		$this->language = $language;
 	}
 
 	/**

@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\world\format\io\data;
 
+use Exception;
 use pocketmine\nbt\BigEndianNbtSerializer;
 use pocketmine\nbt\NbtDataException;
 use pocketmine\nbt\tag\CompoundTag;
@@ -43,7 +44,8 @@ use function zlib_decode;
 use function zlib_encode;
 use const ZLIB_ENCODING_GZIP;
 
-class JavaWorldData extends BaseNbtWorldData{
+class JavaWorldData extends BaseNbtWorldData
+{
 
 	private const TAG_DAY_TIME = "DayTime";
 	private const TAG_DIFFICULTY = "Difficulty";
@@ -61,7 +63,8 @@ class JavaWorldData extends BaseNbtWorldData{
 	private const TAG_THUNDERING = "thundering";
 	private const TAG_THUNDER_TIME = "thunderTime";
 
-	public static function generate(string $path, string $name, WorldCreationOptions $options, int $version = 19133) : void{
+	public static function generate(string $path, string $name, WorldCreationOptions $options, int $version = 19133): void
+	{
 		//TODO, add extra details
 
 		$worldData = CompoundTag::create()
@@ -75,7 +78,7 @@ class JavaWorldData extends BaseNbtWorldData{
 			->setInt(self::TAG_SPAWN_Z, $options->getSpawnPosition()->getFloorZ())
 			->setInt(self::TAG_FORMAT_VERSION, $version)
 			->setInt(self::TAG_DAY_TIME, 0)
-			->setLong(self::TAG_LAST_PLAYED, (int) (microtime(true) * 1000))
+			->setLong(self::TAG_LAST_PLAYED, (int)(microtime(true) * 1000))
 			->setLong(self::TAG_RANDOM_SEED, $options->getSeed())
 			->setLong(self::TAG_SIZE_ON_DISK, 0)
 			->setLong(self::TAG_TIME, 0)
@@ -89,44 +92,47 @@ class JavaWorldData extends BaseNbtWorldData{
 		file_put_contents(Path::join($path, "level.dat"), $buffer);
 	}
 
-	protected function load() : CompoundTag{
-		try{
+	protected function load(): CompoundTag
+	{
+		try {
 			$rawLevelData = Filesystem::fileGetContents($this->dataPath);
-		}catch(\RuntimeException $e){
+		} catch (\RuntimeException $e) {
 			throw new CorruptedWorldException($e->getMessage(), 0, $e);
 		}
 		$nbt = new BigEndianNbtSerializer();
 		$decompressed = @zlib_decode($rawLevelData);
-		if($decompressed === false){
+		if ($decompressed === false) {
 			throw new CorruptedWorldException("Failed to decompress level.dat contents");
 		}
-		try{
+		try {
 			$worldData = $nbt->read($decompressed)->mustGetCompoundTag();
-		}catch(NbtDataException $e){
+		} catch (NbtDataException $e) {
 			throw new CorruptedWorldException($e->getMessage(), 0, $e);
 		}
 
 		$dataTag = $worldData->getTag(self::TAG_ROOT_DATA);
-		if(!($dataTag instanceof CompoundTag)){
+		if (!($dataTag instanceof CompoundTag)) {
 			throw new CorruptedWorldException("Missing '" . self::TAG_ROOT_DATA . "' key or wrong type");
 		}
 		return $dataTag;
 	}
 
-	protected function fix() : void{
+	protected function fix(): void
+	{
 		$generatorNameTag = $this->compoundTag->getTag(self::TAG_GENERATOR_NAME);
-		if(!($generatorNameTag instanceof StringTag)){
+		if (!($generatorNameTag instanceof StringTag)) {
 			$this->compoundTag->setString(self::TAG_GENERATOR_NAME, "default");
-		}elseif(($generatorName = self::hackyFixForGeneratorClasspathInLevelDat($generatorNameTag->getValue())) !== null){
+		} elseif (($generatorName = self::hackyFixForGeneratorClasspathInLevelDat($generatorNameTag->getValue())) !== null) {
 			$this->compoundTag->setString(self::TAG_GENERATOR_NAME, $generatorName);
 		}
 
-		if(!($this->compoundTag->getTag(self::TAG_GENERATOR_OPTIONS) instanceof StringTag)){
+		if (!($this->compoundTag->getTag(self::TAG_GENERATOR_OPTIONS) instanceof StringTag)) {
 			$this->compoundTag->setString(self::TAG_GENERATOR_OPTIONS, "");
 		}
 	}
 
-	public function save() : void{
+	public function save(): void
+	{
 		$this->compoundTag->setLong(VersionInfo::TAG_WORLD_DATA_VERSION, VersionInfo::WORLD_DATA_VERSION);
 
 		$nbt = new BigEndianNbtSerializer();
@@ -134,43 +140,94 @@ class JavaWorldData extends BaseNbtWorldData{
 		Filesystem::safeFilePutContents($this->dataPath, $buffer);
 	}
 
-	public function getDifficulty() : int{
+	public function getDifficulty(): int
+	{
 		return $this->compoundTag->getByte(self::TAG_DIFFICULTY, World::DIFFICULTY_NORMAL);
 	}
 
-	public function setDifficulty(int $difficulty) : void{
+	public function setDifficulty(int $difficulty): void
+	{
 		$this->compoundTag->setByte(self::TAG_DIFFICULTY, $difficulty);
 	}
 
-	public function getRainTime() : int{
+	public function getRainTime(): int
+	{
 		return $this->compoundTag->getInt(self::TAG_RAIN_TIME, 0);
 	}
 
-	public function setRainTime(int $ticks) : void{
+	public function setRainTime(int $ticks): void
+	{
 		$this->compoundTag->setInt(self::TAG_RAIN_TIME, $ticks);
 	}
 
-	public function getRainLevel() : float{
-		return (float) $this->compoundTag->getByte(self::TAG_RAINING, 0);
+	public function getRainLevel(): float
+	{
+		return (float)$this->compoundTag->getByte(self::TAG_RAINING, 0);
 	}
 
-	public function setRainLevel(float $level) : void{
-		$this->compoundTag->setByte(self::TAG_RAINING, (int) ceil($level));
+	public function setRainLevel(float $level): void
+	{
+		$this->compoundTag->setByte(self::TAG_RAINING, (int)ceil($level));
 	}
 
-	public function getLightningTime() : int{
+	public function getLightningTime(): int
+	{
 		return $this->compoundTag->getInt(self::TAG_THUNDER_TIME, 0);
 	}
 
-	public function setLightningTime(int $ticks) : void{
+	public function setLightningTime(int $ticks): void
+	{
 		$this->compoundTag->setInt(self::TAG_THUNDER_TIME, $ticks);
 	}
 
-	public function getLightningLevel() : float{
-		return (float) $this->compoundTag->getByte(self::TAG_THUNDERING, 0);
+	public function getLightningLevel(): float
+	{
+		return (float)$this->compoundTag->getByte(self::TAG_THUNDERING, 0);
 	}
 
-	public function setLightningLevel(float $level) : void{
-		$this->compoundTag->setByte(self::TAG_THUNDERING, (int) ceil($level));
+	public function setLightningLevel(float $level): void
+	{
+		$this->compoundTag->setByte(self::TAG_THUNDERING, (int)ceil($level));
+	}
+
+	// TODO: game rules for java world data?
+	public function getGameRule(string $gamerule): bool|int|float
+	{
+		throw new Exception("Not implemented");
+	}
+
+	public function setGameRule(string $gamerule, float|bool|int $value): void
+	{
+		throw new Exception("Not implemented");
+	}
+
+	public function getBoolGameRule(string $gamerule): bool
+	{
+		throw new Exception("Not implemented");
+	}
+
+	public function setBoolGameRule(string $gamerule, bool $value): void
+	{
+		throw new Exception("Not implemented");
+	}
+
+	public function getFloatGameRule(string $gamerule): float
+	{
+		throw new Exception("Not implemented");
+	}
+
+	public function setFloatGameRule(string $gamerule, float $value): void
+	{
+		throw new Exception("Not implemented");
+	}
+
+	public function getIntGameRule(string $gamerule): int
+	{
+		throw new Exception("Not implemented");
+	}
+
+	public function setIntGameRule(string $gamerule, int $value): void
+	{
+		throw new Exception("Not implemented");
 	}
 }

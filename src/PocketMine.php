@@ -340,6 +340,7 @@ JIT_WARNING
 			new Server($autoloader, $logger, $dataPath, $pluginPath);
 
 			$logger->info("Stopping other threads");
+			// you might be seeing an error, everything is fine.
 			(new ServerKiller(8))->start();
 			usleep(10000); //Fixes ServerKiller not being able to start on single-core machines
 

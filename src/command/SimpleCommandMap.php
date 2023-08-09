@@ -36,6 +36,7 @@ use pocketmine\command\defaults\DumpMemoryCommand;
 use pocketmine\command\defaults\EffectCommand;
 use pocketmine\command\defaults\EnchantCommand;
 use pocketmine\command\defaults\GamemodeCommand;
+use pocketmine\command\defaults\GameruleCommand;
 use pocketmine\command\defaults\GarbageCollectorCommand;
 use pocketmine\command\defaults\GiveCommand;
 use pocketmine\command\defaults\HelpCommand;
@@ -197,6 +198,7 @@ class SimpleCommandMap implements CommandMap
 					 new EffectCommand(),
 					 new EnchantCommand(),
 					 new GamemodeCommand(),
+					 new GameruleCommand(),
 					 new GarbageCollectorCommand(),
 					 new GiveCommand(),
 					 new HelpCommand(),
@@ -243,10 +245,6 @@ class SimpleCommandMap implements CommandMap
 
 	public function register(string $fallbackPrefix, Command $command, ?string $label = null): bool
 	{
-		if (count($command->getPermissions()) === 0) {
-			throw new InvalidArgumentException("Commands must have a permission set");
-		}
-
 		if ($label === null) {
 			$label = $command->getLabel();
 		}
@@ -444,8 +442,10 @@ class SimpleCommandMap implements CommandMap
 			preg_match_all("/\h*([<\[])?\h*([\w|]+)\h*:?\h*([\w\h]+)?\h*[>\]]?\h*/iu", $usage, $matches, PREG_PATTERN_ORDER, strlen($commandString)); // https://regex101.com/r/1REoJG/22
 			$argumentCount = count($matches[0]);
 			if ($argumentCount > 0) for ($argNumber = 0; $argNumber < $argumentCount; ++$argNumber) {
-				if ($matches[1][$argNumber] === "" || $matches[3][$argNumber] === "") {
-					$paramName = mb_strtolower($matches[2][$argNumber]);
+				$optional = str_contains($matches[1][$argNumber], "[");
+				$paramName = mb_strtolower($matches[2][$argNumber]);
+				$paramType = mb_strtolower($matches[3][$argNumber] ?? "");
+				if (($matches[1][$argNumber] === "" || $matches[3][$argNumber] === "") && !str_contains($paramName, "|")) {
 					$softEnums = $this->getSoftEnums();
 					if (isset($softEnums[$paramName])) {
 						$enum = $softEnums[$paramName];
@@ -455,18 +455,11 @@ class SimpleCommandMap implements CommandMap
 					$treeOverloads[$argNumber] = CommandParameter::enum($paramName, $enum, CommandParameter::FLAG_FORCE_COLLAPSE_ENUM); // collapse and assume required because no $optional identifier exists in usage message
 					continue;
 				}
-				$optional = str_contains($matches[1][$argNumber], "[");
-				$paramName = mb_strtolower($matches[2][$argNumber]);
-				$paramType = mb_strtolower($matches[3][$argNumber] ?? "");
 				if (in_array($paramType, array_keys(array_merge($this->softEnums, $this->hardcodedEnums)), true)) {
 					$enum = $this->getSoftEnums()[$paramType] ?? $this->getHardcodedEnums()[$paramType];
 					$treeOverloads[$argNumber] = CommandParameter::enum($paramName, $enum, 0, $optional); // do not collapse because there is an $optional identifier in usage message
 				} elseif (str_contains($paramName, "|")) {
 					$enumValues = explode("|", $paramName);
-					$this->addSoftEnum($enum = new CommandEnum($name . " Enum#" . ++$enumCount, $enumValues, true), false);
-					$treeOverloads[$argNumber] = CommandParameter::enum($paramName, $enum, CommandParameter::FLAG_FORCE_COLLAPSE_ENUM, $optional);
-				} elseif (str_contains($paramName, "/")) {
-					$enumValues = explode("/", $paramName);
 					$this->addSoftEnum($enum = new CommandEnum($name . " Enum#" . ++$enumCount, $enumValues, true), false);
 					$treeOverloads[$argNumber] = CommandParameter::enum($paramName, $enum, CommandParameter::FLAG_FORCE_COLLAPSE_ENUM, $optional);
 				} else {

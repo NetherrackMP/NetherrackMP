@@ -43,6 +43,13 @@ final class Translatable{
 		}
 	}
 
+	/**
+	 * @param (float|int|string|Translatable)[] $params
+	 */
+	public static function create(string $text, array $params = []):Translatable {
+		return new Translatable($text, $params);
+	}
+
 	public function getText() : string{
 		return $this->text;
 	}

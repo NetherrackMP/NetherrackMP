@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace pocketmine\world;
 
+use Exception;
 use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
@@ -66,6 +67,7 @@ use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\TypeConverter;
@@ -73,6 +75,9 @@ use pocketmine\network\mcpe\NetworkBroadcastUtils;
 use pocketmine\network\mcpe\protocol\BlockActorDataPacket;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
+use pocketmine\network\mcpe\protocol\types\BoolGameRule;
+use pocketmine\network\mcpe\protocol\types\FloatGameRule;
+use pocketmine\network\mcpe\protocol\types\IntGameRule;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
 use pocketmine\player\Player;
 use pocketmine\promise\Promise;
@@ -87,6 +92,7 @@ use pocketmine\world\biome\Biome;
 use pocketmine\world\biome\BiomeRegistry;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\ChunkData;
+use pocketmine\world\format\io\data\BedrockWorldData;
 use pocketmine\world\format\io\exception\CorruptedChunkException;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
 use pocketmine\world\format\io\WritableWorldProvider;
@@ -3298,6 +3304,42 @@ class World implements ChunkManager
 		foreach ($this->players as $player) {
 			$player->getNetworkSession()->syncWorldDifficulty($this->getDifficulty());
 		}
+	}
+
+	/**
+	 * @return BoolGameRule[]
+	 * -     */
+	public function getGameRules(): array
+	{
+		$gamerules = [
+			"naturalregeneration" => new BoolGameRule(false, false)
+		];
+		$worldData = $this->provider->getWorldData();
+		$compoundTag = $worldData->getCompoundTag();
+		foreach (BedrockWorldData::GAME_RULE_TAGS as $rule) { // todo: java gamerules
+			if (isset($gamerules[$rule])) continue;
+			$tag = $compoundTag->getTag($rule);
+			if (is_null($tag)) continue;
+			$type = $tag->getType();
+			$value = $tag->getValue();
+			if ($type == NBT::TAG_Byte) $gamerules[$rule] = new BoolGameRule($value == 1, true);
+			else if ($type == NBT::TAG_Int) $gamerules[$rule] = new IntGameRule($value, true);
+			else if ($type == NBT::TAG_Float) $gamerules[$rule] = new FloatGameRule($value, true);
+			else throw new Exception("Unexpected tag type for game rule: " . $rule . ", got type: " . $type);
+		}
+		return $gamerules;
+	}
+
+	public function getGameRule(string $rule): bool|int|float
+	{
+		$worldData = $this->provider->getWorldData();
+		return $worldData->getGameRule($rule);
+	}
+
+	public function setGameRule(string $rule, bool|int|float $value): void
+	{
+		$worldData = $this->provider->getWorldData();
+		$worldData->setGameRule($rule, $value);
 	}
 
 	public function broadcastWeather(): void

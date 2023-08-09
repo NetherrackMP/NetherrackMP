@@ -103,4 +103,20 @@ interface WorldData
 	 * @param float $level 0.0 - 1.0
 	 */
 	public function setLightningLevel(float $level): void;
+
+	public function getGameRule(string $gamerule): bool|int|float;
+
+	public function setGameRule(string $gamerule, bool|int|float $value): void;
+
+	public function getBoolGameRule(string $gamerule): bool;
+
+	public function setBoolGameRule(string $gamerule, bool $value): void;
+
+	public function getFloatGameRule(string $gamerule): float;
+
+	public function setFloatGameRule(string $gamerule, float $value): void;
+
+	public function getIntGameRule(string $gamerule): int;
+
+	public function setIntGameRule(string $gamerule, int $value): void;
 }

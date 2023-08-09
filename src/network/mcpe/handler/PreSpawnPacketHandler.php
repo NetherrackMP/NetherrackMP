@@ -80,9 +80,7 @@ class PreSpawnPacketHandler extends PacketHandler{
 			$levelSettings->rainLevel = 0; //TODO: implement these properly
 			$levelSettings->lightningLevel = 0;
 			$levelSettings->commandsEnabled = true;
-			$levelSettings->gameRules = [
-				"naturalregeneration" => new BoolGameRule(false, false) //Hack for client side regeneration
-			];
+			$levelSettings->gameRules = $world->getGameRules();
 			$levelSettings->experiments = new Experiments([], false);
 
 			$this->session->sendDataPacket(StartGamePacket::create(

@@ -40,9 +40,7 @@ class WeatherCommand extends VanillaCommand
             KnownTranslationFactory::pocketmine_command_weather_description(),
             KnownTranslationFactory::commands_weather_usage()
         );
-        $this->setPermissions([
-            DefaultPermissionNames::COMMAND_WEATHER
-        ]);
+        $this->setPermission(DefaultPermissionNames::COMMAND_WEATHER);
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
@@ -56,17 +54,18 @@ class WeatherCommand extends VanillaCommand
             $sender->sendMessage("Weather is now clear.");
             return;
         }
+		$nameMap = [
+			"Clear",
+			"Light Rain",
+			"Moderate Rain",
+			"Heavy Rain",
+			"Light Thunderstorms",
+			"Moderate Thunderstorms",
+			"Heavy Thunderstorms"
+		];
         if ($args[0] === "query") {
             foreach ($worlds as $world)
-                $sender->sendMessage("Weather is currently " . [
-                        "Clear",
-                        "Light Rain",
-                        "Moderate Rain",
-                        "Heavy Rain",
-                        "Light Thunderstorms",
-                        "Moderate Thunderstorms",
-                        "Heavy Thunderstorms"
-                    ][$world->getWeather()] . (count($worlds) == 1 ? "" : " in " . $world->getDisplayName()) . ".");
+                $sender->sendMessage("Weather is currently " . $nameMap[$world->getWeather()] . (count($worlds) == 1 ? "" : " in " . $world->getDisplayName()) . ".");
             return;
         }
         $duration = $args[1] ?? null;

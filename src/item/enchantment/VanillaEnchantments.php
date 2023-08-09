@@ -99,7 +99,7 @@ final class VanillaEnchantments{
 
 		self::register("VANISHING", new Enchantment(KnownTranslationFactory::enchantment_curse_vanishing(), Rarity::MYTHIC, ItemFlags::NONE, ItemFlags::ALL, 1));
 
-		self::register("SWIFT_SNEAK", new Enchantment(KnownTranslationFactory::enchantment_swift_sneak(), Rarity::MYTHIC, ItemFlags::NONE, ItemFlags::LEGS, 3));
+		self::register("SWIFT_SNEAK", new Enchantment(KnownTranslationFactory::enchantment_swiftsneak(), Rarity::MYTHIC, ItemFlags::NONE, ItemFlags::LEGS, 3));
 	}
 
 	protected static function register(string $name, Enchantment $member) : void{

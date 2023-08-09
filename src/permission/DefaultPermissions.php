@@ -59,7 +59,7 @@ abstract class DefaultPermissions{
 		self::registerPermission(new Permission(Names::COMMAND_BAN_PLAYER, l10n::pocketmine_permission_command_ban_player()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_CLEAR_OTHER, l10n::pocketmine_permission_command_clear_other()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_CLEAR_SELF, l10n::pocketmine_permission_command_clear_self()), [$operatorRoot]);
-		self::registerPermission(new Permission(Names::COMMAND_CLEARTERMINAL, l10n::pocketmine_permission_command_clear_terminal()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_CLEARTERMINAL, l10n::pocketmine_permission_command_clearTerminal()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_DEFAULTGAMEMODE, l10n::pocketmine_permission_command_defaultgamemode()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_DIFFICULTY, l10n::pocketmine_permission_command_difficulty()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_DUMPMEMORY, l10n::pocketmine_permission_command_dumpmemory()), [$consoleRoot]);
@@ -69,6 +69,7 @@ abstract class DefaultPermissions{
 		self::registerPermission(new Permission(Names::COMMAND_ENCHANT_SELF, l10n::pocketmine_permission_command_enchant_self()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_GAMEMODE_OTHER, l10n::pocketmine_permission_command_gamemode_other()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_GAMEMODE_SELF, l10n::pocketmine_permission_command_gamemode_self()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_GAMERULE, l10n::pocketmine_permission_command_gamerule()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_GC, l10n::pocketmine_permission_command_gc()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_GIVE_OTHER, l10n::pocketmine_permission_command_give_other()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_GIVE_SELF, l10n::pocketmine_permission_command_give_self()), [$operatorRoot]);
