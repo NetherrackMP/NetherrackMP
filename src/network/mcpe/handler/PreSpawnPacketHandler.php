@@ -32,7 +32,6 @@ use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\RequestChunkRadiusPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
-use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\Experiments;
@@ -68,20 +67,6 @@ class PreSpawnPacketHandler extends PacketHandler{
 			$typeConverter = $this->session->getTypeConverter();
 
 			$this->session->getLogger()->debug("Preparing StartGamePacket");
-			$levelSettings = new LevelSettings();
-			$levelSettings->seed = -1;
-			$levelSettings->spawnSettings = new SpawnSettings(SpawnSettings::BIOME_TYPE_DEFAULT, "", DimensionIds::OVERWORLD); //TODO: implement this properly
-			$levelSettings->worldGamemode = $typeConverter->coreGameModeToProtocol($this->server->getGamemode());
-			$levelSettings->difficulty = $world->getDifficulty();
-			$levelSettings->spawnPosition = BlockPosition::fromVector3($world->getSpawnLocation());
-			$levelSettings->hasAchievementsDisabled = true;
-			$levelSettings->time = $world->getTime();
-			$levelSettings->eduEditionOffer = 0;
-			$levelSettings->rainLevel = 0; //TODO: implement these properly
-			$levelSettings->lightningLevel = 0;
-			$levelSettings->commandsEnabled = true;
-			$levelSettings->gameRules = $world->getGameRules();
-			$levelSettings->experiments = new Experiments([], false);
 
 			$this->session->sendDataPacket(StartGamePacket::create(
 				$this->player->getId(),
@@ -91,7 +76,7 @@ class PreSpawnPacketHandler extends PacketHandler{
 				$location->pitch,
 				$location->yaw,
 				new CacheableNbt(CompoundTag::create()), //TODO: we don't care about this right now
-				$levelSettings,
+				$world->createLevelSettings($typeConverter),
 				"",
 				$this->server->getMotd(),
 				"",

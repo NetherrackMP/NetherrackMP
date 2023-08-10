@@ -122,7 +122,7 @@ class Cactus extends Transparent{
 					}
 				}
 				$this->age = 0;
-				$world->setBlock($this->position, $this);
+				$world->setBlock($this->position, $this, false);
 			}else{
 				++$this->age;
 				$world->setBlock($this->position, $this);

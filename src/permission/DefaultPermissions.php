@@ -115,5 +115,14 @@ abstract class DefaultPermissions{
 		self::registerPermission(new Permission(Names::COMMAND_WHITELIST_LIST, l10n::pocketmine_permission_command_whitelist_list()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_WHITELIST_RELOAD, l10n::pocketmine_permission_command_whitelist_reload()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_WHITELIST_REMOVE, l10n::pocketmine_permission_command_whitelist_remove()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_WORLD_LIST, l10n::pocketmine_permission_command_world_list()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_WORLD_CREATE, l10n::pocketmine_permission_command_world_list()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_WORLD_INFO, l10n::pocketmine_permission_command_world_list()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_WORLD_DELETE, l10n::pocketmine_permission_command_world_list()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_WORLD_LOAD, l10n::pocketmine_permission_command_world_list()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_WORLD_UNLOAD, l10n::pocketmine_permission_command_world_list()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_WORLD_SETSPAWN, l10n::pocketmine_permission_command_world_list()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_WORLD_SETDEFAULT, l10n::pocketmine_permission_command_world_list()), [$operatorRoot]);
+		self::registerPermission(new Permission(Names::COMMAND_WORLD_COPY, l10n::pocketmine_permission_command_world_list()), [$operatorRoot]);
 	}
 }

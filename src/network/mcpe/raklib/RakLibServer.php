@@ -65,7 +65,7 @@ class RakLibServer extends Thread{
 		$this->address = new NonThreadSafeValue($address);
 	}
 
-	public function startAndWait(int $options = NativeThread::INHERIT_NONE) : void{
+	public function startAndWait(mixed $options = NativeThread::INHERIT_NONE) : void{
 		$this->start($options);
 		$this->synchronized(function() : void{
 			while(!$this->ready && $this->getCrashInfo() === null){

@@ -158,14 +158,14 @@ class PluginDescription{
 				if(!is_array($commandData)){
 					throw new PluginDescriptionParseException("Command $commandName has invalid properties");
 				}
-				if(!isset($commandData[self::KEY_COMMAND_PERMISSION]) || !is_string($commandData[self::KEY_COMMAND_PERMISSION])){
+				/*if(!isset($commandData[self::KEY_COMMAND_PERMISSION]) || !is_string($commandData[self::KEY_COMMAND_PERMISSION])){
 					throw new PluginDescriptionParseException("Command $commandName does not have a valid permission set");
-				}
+				}*/
 				$this->commands[$commandName] = new PluginDescriptionCommandEntry(
 					$commandData[self::KEY_COMMAND_DESCRIPTION] ?? null,
 					$commandData[self::KEY_COMMAND_USAGE] ?? null,
 					$commandData[self::KEY_COMMAND_ALIASES] ?? [],
-					$commandData[self::KEY_COMMAND_PERMISSION],
+					$commandData[self::KEY_COMMAND_PERMISSION] ?? null,
 					$commandData[self::KEY_COMMAND_PERMISSION_MESSAGE] ?? null
 				);
 			}

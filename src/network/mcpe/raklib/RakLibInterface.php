@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace pocketmine\network\mcpe\raklib;
 
 use pmmp\thread\ThreadSafeArray;
+use pocketmine\crash\CrashDump;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\network\AdvancedNetworkInterface;
 use pocketmine\network\mcpe\compression\ZlibCompressor;
@@ -50,6 +51,7 @@ use raklib\server\ipc\RakLibToUserThreadMessageReceiver;
 use raklib\server\ipc\UserToRakLibThreadMessageSender;
 use raklib\server\ServerEventListener;
 use raklib\utils\InternetAddress;
+use Throwable;
 use function addcslashes;
 use function base64_encode;
 use function implode;
@@ -58,7 +60,8 @@ use function rtrim;
 use function substr;
 use const PHP_INT_MAX;
 
-class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface{
+class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface
+{
 	/**
 	 * Sometimes this gets changed when the MCPE-layer protocol gets broken to the point where old and new can't
 	 * communicate. It's important that we check this to avoid catastrophes.
@@ -87,15 +90,16 @@ class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface{
 	private TypeConverter $typeConverter;
 
 	public function __construct(
-		Server $server,
-		string $ip,
-		int $port,
-		bool $ipV6,
-		PacketBroadcaster $packetBroadcaster,
-		EntityEventBroadcaster $entityEventBroadcaster,
+		Server                  $server,
+		string                  $ip,
+		int                     $port,
+		bool                    $ipV6,
+		PacketBroadcaster       $packetBroadcaster,
+		EntityEventBroadcaster  $entityEventBroadcaster,
 		PacketSerializerContext $packetSerializerContext,
-		TypeConverter $typeConverter
-	){
+		TypeConverter           $typeConverter
+	)
+	{
 		$this->server = $server;
 		$this->packetBroadcaster = $packetBroadcaster;
 		$this->packetSerializerContext = $packetSerializerContext;
@@ -104,11 +108,11 @@ class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface{
 
 		$this->rakServerId = mt_rand(0, PHP_INT_MAX);
 
-		$sleeperEntry = $this->server->getTickSleeper()->addNotifier(function() : void{
+		$sleeperEntry = $this->server->getTickSleeper()->addNotifier(function (): void {
 			Timings::$connection->startTiming();
-			try{
-				while($this->eventReceiver->handle($this));
-			}finally{
+			try {
+				while ($this->eventReceiver->handle($this)) ;
+			} finally {
 				Timings::$connection->stopTiming();
 			}
 		});
@@ -137,35 +141,39 @@ class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface{
 		);
 	}
 
-	public function start() : void{
+	public function start(): void
+	{
 		$this->server->getLogger()->debug("Waiting for RakLib to start...");
-		try{
+		try {
 			$this->rakLib->startAndWait();
-		}catch(SocketException $e){
+		} catch (SocketException $e) {
 			throw new NetworkInterfaceStartException($e->getMessage(), 0, $e);
 		}
 		$this->server->getLogger()->debug("RakLib booted successfully");
 	}
 
-	public function setNetwork(Network $network) : void{
+	public function setNetwork(Network $network): void
+	{
 		$this->network = $network;
 	}
 
-	public function tick() : void{
-		if(!$this->rakLib->isRunning()){
+	public function tick(): void
+	{
+		if (!$this->rakLib->isRunning()) {
 			$e = $this->rakLib->getCrashInfo();
-			if($e !== null){
+			if ($e !== null) {
 				throw new ThreadCrashException("RakLib crashed", $e);
 			}
 			throw new \Exception("RakLib Thread crashed without crash information");
 		}
 	}
 
-	public function onClientDisconnect(int $sessionId, int $reason) : void{
-		if(isset($this->sessions[$sessionId])){
+	public function onClientDisconnect(int $sessionId, int $reason): void
+	{
+		if (isset($this->sessions[$sessionId])) {
 			$session = $this->sessions[$sessionId];
 			unset($this->sessions[$sessionId]);
-			$session->onClientDisconnect(match($reason){
+			$session->onClientDisconnect(match ($reason) {
 				DisconnectReason::CLIENT_DISCONNECT => KnownTranslationFactory::pocketmine_disconnect_clientDisconnect(),
 				DisconnectReason::PEER_TIMEOUT => KnownTranslationFactory::pocketmine_disconnect_error_timeout(),
 				DisconnectReason::CLIENT_RECONNECT => KnownTranslationFactory::pocketmine_disconnect_clientReconnect(),
@@ -174,19 +182,22 @@ class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface{
 		}
 	}
 
-	public function close(int $sessionId) : void{
-		if(isset($this->sessions[$sessionId])){
+	public function close(int $sessionId): void
+	{
+		if (isset($this->sessions[$sessionId])) {
 			unset($this->sessions[$sessionId]);
 			$this->interface->closeSession($sessionId);
 		}
 	}
 
-	public function shutdown() : void{
+	public function shutdown(): void
+	{
 		$this->server->getTickSleeper()->removeNotifier($this->sleeperNotifierId);
 		$this->rakLib->quit();
 	}
 
-	public function onClientConnect(int $sessionId, string $address, int $port, int $clientID) : void{
+	public function onClientConnect(int $sessionId, string $address, int $port, int $clientID): void
+	{
 		$session = new NetworkSession(
 			$this->server,
 			$this->network->getSessionManager(),
@@ -203,9 +214,10 @@ class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface{
 		$this->sessions[$sessionId] = $session;
 	}
 
-	public function onPacketReceive(int $sessionId, string $packet) : void{
-		if(isset($this->sessions[$sessionId])){
-			if($packet === "" || $packet[0] !== self::MCPE_RAKNET_PACKET_ID){
+	public function onPacketReceive(int $sessionId, string $packet): void
+	{
+		if (isset($this->sessions[$sessionId])) {
+			if ($packet === "" || $packet[0] !== self::MCPE_RAKNET_PACKET_ID) {
 				$this->sessions[$sessionId]->getLogger()->debug("Non-FE packet received: " . base64_encode($packet));
 				return;
 			}
@@ -214,9 +226,9 @@ class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface{
 			$address = $session->getIp();
 			$buf = substr($packet, 1);
 			$name = $session->getDisplayName();
-			try{
+			try {
 				$session->handleEncoded($buf);
-			}catch(PacketHandlingException $e){
+			} catch (PacketHandlingException $e) {
 				$logger = $session->getLogger();
 				$logger->error("Bad packet: " . $e->getMessage());
 
@@ -224,74 +236,86 @@ class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface{
 				$logger->debug(implode("\n", Utils::printableExceptionInfo($e)));
 				$session->disconnectWithError(KnownTranslationFactory::pocketmine_disconnect_error_badPacket());
 				$this->interface->blockAddress($address, 5);
-			}catch(\Throwable $e){
+			} catch (Throwable $e) {
 				//record the name of the player who caused the crash, to make it easier to find the reproducing steps
 				$this->server->getLogger()->emergency("Crash occurred while handling a packet from session: $name");
-				throw $e;
+				$this->server->getLogger()->error($e->getTraceAsString());
+				$session->disconnectWithError(KnownTranslationFactory::pocketmine_disconnect_error_internal());
 			}
 		}
 	}
 
-	public function blockAddress(string $address, int $timeout = 300) : void{
+	public function blockAddress(string $address, int $timeout = 300): void
+	{
 		$this->interface->blockAddress($address, $timeout);
 	}
 
-	public function unblockAddress(string $address) : void{
+	public function unblockAddress(string $address): void
+	{
 		$this->interface->unblockAddress($address);
 	}
 
-	public function onRawPacketReceive(string $address, int $port, string $payload) : void{
+	public function onRawPacketReceive(string $address, int $port, string $payload): void
+	{
 		$this->network->processRawPacket($this, $address, $port, $payload);
 	}
 
-	public function sendRawPacket(string $address, int $port, string $payload) : void{
+	public function sendRawPacket(string $address, int $port, string $payload): void
+	{
 		$this->interface->sendRaw($address, $port, $payload);
 	}
 
-	public function addRawPacketFilter(string $regex) : void{
+	public function addRawPacketFilter(string $regex): void
+	{
 		$this->interface->addRawPacketFilter($regex);
 	}
 
-	public function onPacketAck(int $sessionId, int $identifierACK) : void{
+	public function onPacketAck(int $sessionId, int $identifierACK): void
+	{
 
 	}
 
-	public function setName(string $name) : void{
+	public function setName(string $name): void
+	{
 		$info = $this->server->getQueryInformation();
 
 		$this->interface->setName(implode(";",
-			[
-				"MCPE",
-				rtrim(addcslashes($name, ";"), '\\'),
-				ProtocolInfo::CURRENT_PROTOCOL,
-				ProtocolInfo::MINECRAFT_VERSION_NETWORK,
-				$info->getPlayerCount(),
-				$info->getMaxPlayerCount(),
-				$this->rakServerId,
-				$this->server->getName(),
-				match($this->server->getGamemode()){
-					GameMode::SURVIVAL() => "Survival",
-					GameMode::ADVENTURE() => "Adventure",
-					default => "Creative"
-				}
-			]) . ";"
+				[
+					"MCPE",
+					rtrim(addcslashes($name, ";"), '\\'),
+					ProtocolInfo::CURRENT_PROTOCOL,
+					ProtocolInfo::MINECRAFT_VERSION_NETWORK,
+					$info->getPlayerCount(),
+					$info->getMaxPlayerCount(),
+					$this->rakServerId,
+					$this->server->getName(),
+					match ($this->server->getGamemode()) {
+						GameMode::SURVIVAL() => "Survival",
+						GameMode::ADVENTURE() => "Adventure",
+						default => "Creative"
+					}
+				]) . ";"
 		);
 	}
 
-	public function setPortCheck(bool $name) : void{
+	public function setPortCheck(bool $name): void
+	{
 		$this->interface->setPortCheck($name);
 	}
 
-	public function setPacketLimit(int $limit) : void{
+	public function setPacketLimit(int $limit): void
+	{
 		$this->interface->setPacketsPerTickLimit($limit);
 	}
 
-	public function onBandwidthStatsUpdate(int $bytesSentDiff, int $bytesReceivedDiff) : void{
+	public function onBandwidthStatsUpdate(int $bytesSentDiff, int $bytesReceivedDiff): void
+	{
 		$this->network->getBandwidthTracker()->add($bytesSentDiff, $bytesReceivedDiff);
 	}
 
-	public function putPacket(int $sessionId, string $payload, bool $immediate = true) : void{
-		if(isset($this->sessions[$sessionId])){
+	public function putPacket(int $sessionId, string $payload, bool $immediate = true): void
+	{
+		if (isset($this->sessions[$sessionId])) {
 			$pk = new EncapsulatedPacket();
 			$pk->buffer = self::MCPE_RAKNET_PACKET_ID . $payload;
 			$pk->reliability = PacketReliability::RELIABLE_ORDERED;
@@ -301,8 +325,9 @@ class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface{
 		}
 	}
 
-	public function onPingMeasure(int $sessionId, int $pingMS) : void{
-		if(isset($this->sessions[$sessionId])){
+	public function onPingMeasure(int $sessionId, int $pingMS): void
+	{
+		if (isset($this->sessions[$sessionId])) {
 			$this->sessions[$sessionId]->updatePing($pingMS);
 		}
 	}

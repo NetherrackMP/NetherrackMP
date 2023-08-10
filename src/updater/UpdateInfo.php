@@ -31,7 +31,7 @@ final class UpdateInfo
 {
 	public function __construct(
 		public string $base_version,
-		public string $date,
+		public int $date,
 		public string $details_url,
 		public string $download_url
 	)

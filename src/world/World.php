@@ -49,6 +49,8 @@ use pocketmine\entity\object\ItemEntity;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockUpdateEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\event\entity\EntityDamageByLightningEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\world\ChunkLoadEvent;
 use pocketmine\event\world\ChunkPopulateEvent;
@@ -72,12 +74,19 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\NetworkBroadcastUtils;
+use pocketmine\network\mcpe\protocol\AddActorPacket;
 use pocketmine\network\mcpe\protocol\BlockActorDataPacket;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
+use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\network\mcpe\protocol\types\BoolGameRule;
+use pocketmine\network\mcpe\protocol\types\DimensionIds;
+use pocketmine\network\mcpe\protocol\types\entity\PropertySyncData;
+use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\network\mcpe\protocol\types\FloatGameRule;
 use pocketmine\network\mcpe\protocol\types\IntGameRule;
+use pocketmine\network\mcpe\protocol\types\LevelSettings;
+use pocketmine\network\mcpe\protocol\types\SpawnSettings;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
 use pocketmine\player\Player;
 use pocketmine\promise\Promise;
@@ -1020,21 +1029,21 @@ class World implements ChunkManager
 
 		if (--$this->rainTime <= 0) {
 			if ($this->isRaining()) {
-				$this->rainTime = rand(12000, 180000);
+				$this->rainTime = mt_rand(12000, 180000);
 				$this->rainLevel = 0;
 			} else {
-				$this->rainTime = rand(12000, 24000);
-				$this->rainLevel = rand(1, 3) * 0.3;
+				$this->rainTime = mt_rand(12000, 24000);
+				$this->rainLevel = mt_rand(1, 3) * 0.3;
 			}
 			$this->broadcastWeather();
 		}
 		if (--$this->lightningTime <= 0) {
 			if ($this->isRainingLightning()) {
-				$this->lightningTime = rand(12000, 180000);
+				$this->lightningTime = mt_rand(12000, 180000);
 				$this->lightningLevel = 0;
 			} else {
-				$this->lightningTime = rand(3600, 15600);
-				$this->lightningLevel = rand(1, 3) * 0.3;
+				$this->lightningTime = mt_rand(3600, 15600);
+				$this->lightningLevel = mt_rand(1, 3) * 0.3;
 			}
 			$this->broadcastWeather();
 		}
@@ -1493,11 +1502,35 @@ class World implements ChunkManager
 				}
 			}
 		}
+
+		if ($this->lightningLevel > 0 && mt_rand(1, 100000) == 1) {
+			$x = mt_rand(0, 15);
+			$z = mt_rand(0, 15);
+			$y = $chunk->getHighestBlockAt($x, $z);
+			if (is_null($y)) return;
+			$this->summonLightningBolt(new Vector3($x + ($chunkX << 4), $y, $z + ($chunkZ << 4)));
+		}
 	}
 
-	/**
-	 * @return mixed[]
-	 */
+	public function summonLightningBolt(Vector3 $at): void
+	{
+		$eid = Entity::nextRuntimeId();
+		$lightning = AddActorPacket::create($eid, $eid, "minecraft:lightning_bolt", $at, null, 0, 0, 0.0, 0.0, [], [], new PropertySyncData([], []), []);
+		$sound = PlaySoundPacket::create("ambient.weather.thunder", $at->x, $at->y, $at->z, 10, 1);
+		$down = $this->getBlock($at->down());
+		if ($down->isSolid()) $this->setBlock($at, VanillaBlocks::FIRE());
+		foreach ($this->getViewersForPosition($at) as $player) {
+			$player->getNetworkSession()->sendDataPacket($lightning);
+			$player->getNetworkSession()->sendDataPacket($sound);
+			$loc = $player->getLocation();
+			if (sqrt(($loc->x - $at->x) ** 2 + ($loc->z - $at->z) ** 2) < 2) {
+				$player->attack(new EntityDamageByLightningEvent($at, $player));
+				$player->setOnFire(3);
+			}
+		}
+	}
+
+	/*** @return array */
 	public function __debugInfo(): array
 	{
 		return [];
@@ -3307,8 +3340,9 @@ class World implements ChunkManager
 	}
 
 	/**
-	 * @return BoolGameRule[]
-	 * -     */
+	 * @return (BoolGameRule | IntGameRule | FloatGameRule)[]
+	 * @throws Exception
+	 */
 	public function getGameRules(): array
 	{
 		$gamerules = [
@@ -3340,12 +3374,21 @@ class World implements ChunkManager
 	{
 		$worldData = $this->provider->getWorldData();
 		$worldData->setGameRule($rule, $value);
+		$this->broadcastGameRules();
+	}
+
+	public function broadcastGameRules(): void
+	{
+		$gameRules = $this->getGameRules();
+		foreach ($this->players as $player)
+			$player->getNetworkSession()->syncWorldGameRules($gameRules);
 	}
 
 	public function broadcastWeather(): void
 	{
+		$weather = $this->getWeather();
 		foreach ($this->players as $player)
-			$player->getNetworkSession()->syncWorldWeather($this->getWeather());
+			$player->getNetworkSession()->syncWorldWeather($weather);
 	}
 
 	public function getWeather(): int
@@ -3360,11 +3403,11 @@ class World implements ChunkManager
 	{
 		if ($weather == 0) { // 0
 			$this->rainLevel = 0;
-			$this->rainTime = rand(12000, 24000);
+			$this->rainTime = mt_rand(12000, 24000);
 			$this->lightningLevel = 0;
-			$this->lightningTime = rand(3600, 15600);
+			$this->lightningTime = mt_rand(3600, 15600);
 		} else if ($weather >= self::WEATHER_LIGHT_THUNDER) { // 4 5 6
-			if (is_null($duration)) $duration = rand(3600, 15600);
+			if (is_null($duration)) $duration = mt_rand(3600, 15600);
 			if ($setOther) {
 				$this->rainLevel = 0.3;
 				$this->rainTime = $duration;
@@ -3372,7 +3415,7 @@ class World implements ChunkManager
 			$this->lightningLevel = ($weather - 3) * 0.3;
 			$this->lightningTime = $duration;
 		} else if ($weather >= self::WEATHER_LIGHT_RAIN) { // 1 2 3
-			if (is_null($duration)) $duration = rand(12000, 24000);
+			if (is_null($duration)) $duration = mt_rand(12000, 24000);
 			$this->rainLevel = $weather * 0.3;
 			$this->rainTime = $duration;
 			if ($setOther) {
@@ -3712,5 +3755,24 @@ class World implements ChunkManager
 				}
 			}
 		}
+	}
+
+	public function createLevelSettings(TypeConverter $typeConverter): LevelSettings
+	{
+		$levelSettings = new LevelSettings();
+		$levelSettings->seed = -1;
+		$levelSettings->spawnSettings = new SpawnSettings(SpawnSettings::BIOME_TYPE_DEFAULT, "", DimensionIds::OVERWORLD); // todo: implement it properly
+		$levelSettings->worldGamemode = $typeConverter->coreGameModeToProtocol($this->server->getGamemode());
+		$levelSettings->difficulty = $this->getDifficulty();
+		$levelSettings->spawnPosition = BlockPosition::fromVector3($this->getSpawnLocation());
+		$levelSettings->hasAchievementsDisabled = true;
+		$levelSettings->time = $this->getTime();
+		$levelSettings->eduEditionOffer = 0;
+		$levelSettings->rainLevel = $this->rainLevel;
+		$levelSettings->lightningLevel = $this->lightningLevel;
+		$levelSettings->commandsEnabled = true;
+		$levelSettings->gameRules = $this->getGameRules();
+		$levelSettings->experiments = new Experiments([], false);
+		return $levelSettings;
 	}
 }

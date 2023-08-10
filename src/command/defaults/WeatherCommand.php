@@ -26,6 +26,7 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\lang\Translatable;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\world\World;
@@ -33,55 +34,56 @@ use pocketmine\world\World;
 class WeatherCommand extends VanillaCommand
 {
 
-    public function __construct()
-    {
-        parent::__construct(
-            "weather",
-            KnownTranslationFactory::pocketmine_command_weather_description(),
-            KnownTranslationFactory::commands_weather_usage()
-        );
-        $this->setPermission(DefaultPermissionNames::COMMAND_WEATHER);
-    }
+	public function __construct()
+	{
+		parent::__construct(
+			"weather",
+			KnownTranslationFactory::pocketmine_command_weather_description(),
+			KnownTranslationFactory::commands_weather_usage()
+		);
+		$this->setPermission(DefaultPermissionNames::COMMAND_WEATHER);
+	}
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
-    {
-        if (!$sender instanceof Player) {
-            $worlds = $sender->getServer()->getWorldManager()->getWorlds();
-        } else $worlds = [$sender->getWorld()];
-        if ($args[0] === "clear") {
-            foreach ($worlds as $world)
-                $world->setWeather(World::WEATHER_CLEAR, 0);
-            $sender->sendMessage("Weather is now clear.");
-            return;
-        }
-		$nameMap = [
-			"Clear",
-			"Light Rain",
-			"Moderate Rain",
-			"Heavy Rain",
-			"Light Thunderstorms",
-			"Moderate Thunderstorms",
-			"Heavy Thunderstorms"
-		];
-        if ($args[0] === "query") {
-            foreach ($worlds as $world)
-                $sender->sendMessage("Weather is currently " . $nameMap[$world->getWeather()] . (count($worlds) == 1 ? "" : " in " . $world->getDisplayName()) . ".");
-            return;
-        }
-        $duration = $args[1] ?? null;
-        if (!is_null($duration) && !is_numeric($duration)) throw new InvalidCommandSyntaxException();
-        if ($args[0] === "rain") {
-            foreach ($worlds as $world)
-                $world->setWeather(World::WEATHER_MODERATE_RAIN, $duration);
-            $sender->sendMessage("Weather is now set to Moderate Rain.");
-            return;
-        }
-        if ($args[0] === "thunder") {
-            foreach ($worlds as $world)
-                $world->setWeather(World::WEATHER_MODERATE_THUNDER, $duration);
-            $sender->sendMessage("Weather is now set to Moderate Thunderstorms.");
-            return;
-        }
-        throw new InvalidCommandSyntaxException();
-    }
+	public static function translateWeather(int $weather): Translatable
+	{
+		return KnownTranslationFactory::__callStatic("commands.weather.weather" . $weather, []);
+	}
+
+	public function execute(CommandSender $sender, string $commandLabel, array $args)
+	{
+		if (!$sender instanceof Player) {
+			$worlds = $sender->getServer()->getWorldManager()->getWorlds();
+		} else $worlds = [$sender->getWorld()];
+		if ($sender instanceof Player) $sender->getWorld()->summonLightningBolt($sender->getLocation());
+		if (!isset($args[0])) throw new InvalidCommandSyntaxException();
+		if ($args[0] === "clear") {
+			foreach ($worlds as $world)
+				$world->setWeather(World::WEATHER_CLEAR, 0);
+			$sender->sendMessage(KnownTranslationFactory::commands_weather_success_clear());
+			return;
+		}
+		if ($args[0] === "query") {
+			foreach ($worlds as $world) {
+				$weather = self::translateWeather($world->getWeather());
+				if (count($worlds) == 1) $sender->sendMessage(KnownTranslationFactory::commands_weather_query($weather));
+				else $sender->sendMessage(KnownTranslationFactory::commands_weather_query_specific($weather, $world->getDisplayName()));
+			}
+			return;
+		}
+		$duration = $args[1] ?? null;
+		if (!is_null($duration) && !is_numeric($duration)) throw new InvalidCommandSyntaxException();
+		if ($args[0] === "rain") {
+			foreach ($worlds as $world)
+				$world->setWeather(World::WEATHER_MODERATE_RAIN, $duration);
+			$sender->sendMessage(KnownTranslationFactory::commands_weather_success_rain());
+			return;
+		}
+		if ($args[0] === "thunder") {
+			foreach ($worlds as $world)
+				$world->setWeather(World::WEATHER_MODERATE_THUNDER, $duration);
+			$sender->sendMessage(KnownTranslationFactory::commands_weather_success_thunder());
+			return;
+		}
+		throw new InvalidCommandSyntaxException();
+	}
 }

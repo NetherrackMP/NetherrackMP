@@ -1,0 +1,9 @@
+name: MyPlugin
+main: OguzhanUmutlu\MyPlugin\Main
+api: 5.0.0
+version: 1.0.0
+author: OguzhanUmutlu
+
+commands:
+  test:
+    description: hey

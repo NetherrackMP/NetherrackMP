@@ -156,6 +156,7 @@ abstract class PluginBase implements Plugin, CommandExecutor{
 
 			if(($usageMessage = $data->getUsageMessage()) !== null){
 				$newCmd->setUsage($usageMessage);
+				$newCmd->setUsageMessage($usageMessage);
 			}
 
 			$aliasList = [];

@@ -35,6 +35,7 @@ final class PluginCommand extends Command implements PluginOwned{
 	){
 		parent::__construct($name);
 		$this->usageMessage = "";
+		$this->usage = "";
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

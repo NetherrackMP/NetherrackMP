@@ -89,6 +89,15 @@ final class DefaultPermissionNames
 	public const COMMAND_WHITELIST_LIST = "pocketmine.command.whitelist.list";
 	public const COMMAND_WHITELIST_RELOAD = "pocketmine.command.whitelist.reload";
 	public const COMMAND_WHITELIST_REMOVE = "pocketmine.command.whitelist.remove";
+	public const COMMAND_WORLD_LIST = "pocketmine.command.world.list";
+	public const COMMAND_WORLD_CREATE = "pocketmine.command.world.create";
+	public const COMMAND_WORLD_INFO = "pocketmine.command.world.info";
+	public const COMMAND_WORLD_DELETE = "pocketmine.command.world.delete";
+	public const COMMAND_WORLD_LOAD = "pocketmine.command.world.load";
+	public const COMMAND_WORLD_UNLOAD = "pocketmine.command.world.unload";
+	public const COMMAND_WORLD_SETSPAWN = "pocketmine.command.world.setspawn";
+	public const COMMAND_WORLD_SETDEFAULT = "pocketmine.command.world.setdefault";
+	public const COMMAND_WORLD_COPY = "pocketmine.command.world.copy";
 	public const GROUP_CONSOLE = "pocketmine.group.console";
 	public const GROUP_OPERATOR = "pocketmine.group.operator";
 	public const GROUP_USER = "pocketmine.group.user";

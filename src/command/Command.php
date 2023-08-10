@@ -57,28 +57,42 @@ abstract class Command
 
 	protected Translatable|string $description = "";
 
+	protected Translatable|string $usage;
 	protected Translatable|string $usageMessage;
 
 	/** @var string[] */
 	private array $permission = [];
 	private ?string $permissionMessage = null;
+	private bool $transformArguments = false;
 
 	/**
 	 * @param string[] $aliases
 	 */
-	public function __construct(Translatable|string $name, Translatable|string $description = "", Translatable|string|null $usageMessage = null, array $aliases = [])
+	public function __construct(Translatable|string $name, Translatable|string $description = "", Translatable|string|null $usage = null, array $aliases = [])
 	{
+		$label = $name instanceof Translatable ? $name->getText() : $name;
 		$this->name = $name;
-		$this->setLabel($name);
+		$this->setLabel($label);
 		$this->setDescription($description);
-		$this->usageMessage = $usageMessage ?? ("/" . $name);
+		$this->usage = $this->usageMessage = $usage ?? ("/" . $label);
 		$this->setAliases($aliases);
+	}
+
+	public function isTransformingArguments(): bool
+	{
+		return $this->transformArguments;
+	}
+
+	public function setTransformArguments(bool $transformArguments): void
+	{
+		$this->transformArguments = $transformArguments;
 	}
 
 	/**
 	 * @param string[] $args
 	 *
 	 * @throws CommandException
+	 * @phpstan-return mixed
 	 */
 	abstract public function execute(CommandSender $sender, string $commandLabel, array $args);
 
@@ -123,7 +137,7 @@ abstract class Command
 
 	public function testPermission(CommandSender $target, ?string $permission = null): bool
 	{
-		if ($this->testPermissionSilent($target, $permission)) {
+		if (is_null($permission) || $this->testPermissionSilent($target, $permission)) {
 			return true;
 		}
 
@@ -222,7 +236,17 @@ abstract class Command
 
 	public function getUsage(): Translatable|string
 	{
+		return $this->usage;
+	}
+
+	public function getUsageMessage(): Translatable|string
+	{
 		return $this->usageMessage;
+	}
+
+	public function setUsageMessage(Translatable|string $usageMessage): void
+	{
+		$this->usageMessage = $usageMessage;
 	}
 
 	/**
@@ -248,7 +272,7 @@ abstract class Command
 
 	public function setUsage(Translatable|string $usage): void
 	{
-		$this->usageMessage = $usage;
+		$this->usage = $usage;
 	}
 
 	public static function broadcastCommandMessage(CommandSender $source, Translatable|string $message, bool $sendToSource = true): void

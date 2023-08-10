@@ -20,7 +20,7 @@ settings:
   async-workers: auto
   #Whether to allow running development builds. Dev builds might crash, break your plugins, corrupt your world and more.
   #It is recommended to avoid using development builds where possible.
-  enable-dev-builds: true
+  enable-dev-builds: false
 
 memory:
   #Global soft memory limit in megabytes. Set to 0 to disable
@@ -129,9 +129,9 @@ chunk-ticking:
   blocks-per-subchunk-per-tick: 3
   #IDs of blocks not to perform random ticking on.
   disable-block-ticking:
-  #- grass
-  #- ice
-  #- fire
+    #- grass
+    #- ice
+    #- fire
 
 chunk-generation:
   #Max. amount of chunks in the waiting queue to be populated
@@ -164,7 +164,7 @@ auto-updater:
   preferred-channel: stable
   #If using a development version, it will suggest changing the channel
   suggest-channels: true
-  repo: netherrackmp/netherrackmp
+  repo: 675066387
 
 timings:
   #Choose the host to use for viewing your timings results.
@@ -185,44 +185,48 @@ commands:
     enabled: false
 
 aliases:
-##This section allows you to add, remove or remap command aliases.
-##A single alias can call one or more other commands (or aliases).
-##Aliases defined here will override any command aliases declared by plugins or Netherrack-MP itself.
+  ##This section allows you to add, remove or remap command aliases.
+  ##A single alias can call one or more other commands (or aliases).
+  ##Aliases defined here will override any command aliases declared by plugins or Netherrack-MP itself.
 
-##To remove an alias, set it to [], like so (note that prefixed aliases like "pocketmine:stop" will remain and can't
-##be removed):
-#stop: []
+  ##To remove an alias, set it to [], like so (note that prefixed aliases like "pocketmine:stop" will remain and can't
+  ##be removed):
+  #stop: []
 
-##Commands are not removed, only their aliases. You can still refer to a command using its full (prefixed)
-##name, even if all its aliases are overwritten. The full name is usually something like "pocketmine:commandname" or
-##"pluginname:commandname".
-#abort: [pocketmine:stop]
+  ##Commands are not removed, only their aliases. You can still refer to a command using its full (prefixed)
+  ##name, even if all its aliases are overwritten. The full name is usually something like "pocketmine:commandname" or
+  ##"pluginname:commandname".
+  #abort: [pocketmine:stop]
 
-##To add an alias, list the command(s) that it calls:
-#showtheversion: [version]
-#savestop: [save-all, stop]
+  ##To add an alias, list the command(s) that it calls:
+  #showtheversion: [version]
+  #savestop: [save-all, stop]
 
-##To invoke another command with arguments, use $1 to pass the first argument, $2 for the second etc:
-#giveadmin: [op $1] ## `giveadmin alex` -> `op alex`
-#kill: [suicide, say "I tried to kill $1"] ## `kill alex` -> `suicide` + `say "I tried to kill alex"`
-#giverandom: [give $1 $2, say "Someone has just received a $2!"] ## `giverandom alex diamond` -> `give alex diamond` + `say "Someone has just received a diamond!"`
+  ##To invoke another command with arguments, use $1 to pass the first argument, $2 for the second etc:
+  #giveadmin: [op $1] ## `giveadmin alex` -> `op alex`
+  #kill: [suicide, say "I tried to kill $1"] ## `kill alex` -> `suicide` + `say "I tried to kill alex"`
+  #giverandom: [give $1 $2, say "Someone has just received a $2!"] ## `giverandom alex diamond` -> `give alex diamond` + `say "Someone has just received a diamond!"`
 
-##To make arguments mandatory (so that the command fails if they are not provided), use $$, e.g. $$1, $$2:
-#makeadmin: [op $$1] ## `makeadmin alex` -> `op alex`, `makeadmin` with no arguments = error
+  ##To make arguments mandatory (so that the command fails if they are not provided), use $$, e.g. $$1, $$2:
+  #makeadmin: [op $$1] ## `makeadmin alex` -> `op alex`, `makeadmin` with no arguments = error
 
-##To pass through a range of arguments, put a - (hyphen) after the index:
-#tpalias: [tp $1-] ## `tpalias 256 70 256` -> `tp 256 70 256` - this passes arguments 1 and everything after it to the `tp` command
+  ##To pass through a range of arguments, put a - (hyphen) after the index:
+  #tpalias: [tp $1-] ## `tpalias 256 70 256` -> `tp 256 70 256` - this passes arguments 1 and everything after it to the `tp` command
 
-##To change an existing command alias and make it do something else:
-#tp: [suicide]
+  ##To change an existing command alias and make it do something else:
+  #tp: [suicide]
 
 worlds:
-#These settings will override the generator set in server.properties and allows loading multiple worlds
-#Example:
-#world:
-# seed: 404
-# generator: FLAT
-# preset: 2;bedrock,59xstone,3xdirt,grass;1
+  #These settings will override the generator set in server.properties and allows loading multiple worlds
+  #Example:
+  #world:
+  # seed: 404
+  # generator: FLAT
+  # preset: 2;bedrock,59xstone,3xdirt,grass;1
+  world_nether:
+    generator: nether
+  world_end:
+    generator: end
 
 plugins:
   #Setting this to true will cause the legacy structure to be used where plugin data is placed inside the --plugins dir.

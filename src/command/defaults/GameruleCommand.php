@@ -55,7 +55,7 @@ class GameruleCommand extends VanillaCommand
 		if (isset($args[2])) {
 			$worlds = [$sender->getServer()->getWorldManager()->getWorldByName($args[2])];
 			if (is_null($worlds[0])) {
-				$sender->sendMessage(KnownTranslationFactory::commands_generic_world_notFound());
+				$sender->sendMessage(KnownTranslationFactory::commands_generic_world_notFound($args[2]));
 				return;
 			}
 		}

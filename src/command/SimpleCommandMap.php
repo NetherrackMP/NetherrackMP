@@ -23,6 +23,8 @@ declare(strict_types=1);
 
 namespace pocketmine\command;
 
+use Error;
+use Exception;
 use InvalidArgumentException;
 use pocketmine\command\defaults\BanCommand;
 use pocketmine\command\defaults\BanIpCommand;
@@ -68,6 +70,7 @@ use pocketmine\command\defaults\VanillaCommand;
 use pocketmine\command\defaults\VersionCommand;
 use pocketmine\command\defaults\WeatherCommand;
 use pocketmine\command\defaults\WhitelistCommand;
+use pocketmine\command\defaults\WorldCommand;
 use pocketmine\command\utils\CommandStringHelper;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\effect\StringToEffectParser;
@@ -92,6 +95,7 @@ use pocketmine\timings\Timings;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\World;
 use ReflectionClass;
+use Throwable;
 use function array_shift;
 use function count;
 use function implode;
@@ -228,7 +232,8 @@ class SimpleCommandMap implements CommandMap
 					 new TransferServerCommand(),
 					 new VersionCommand(),
 					 new WeatherCommand(),
-					 new WhitelistCommand()
+					 new WhitelistCommand(),
+					 new WorldCommand()
 				 ] as $cmd) {
 			if ($this->server->getConfigGroup()->getPropertyBool("commands." . $cmd->getName() . ".enabled", true))
 				$list[] = $cmd;
@@ -315,7 +320,11 @@ class SimpleCommandMap implements CommandMap
 			try {
 				if ($target->testPermission($sender)) $target->execute($sender, $sentCommandLabel, $args);
 			} catch (InvalidCommandSyntaxException) {
-				$sender->sendMessage($sender->getLanguage()->translate(KnownTranslationFactory::commands_generic_usage($target->getUsage())));
+				$sender->sendMessage(KnownTranslationFactory::commands_generic_usage($target->getUsageMessage()));
+			} catch (Throwable $exception) {
+				$sender->sendMessage(KnownTranslationFactory::pocketmine_command_failure($target->getName()));
+				$this->server->getLogger()->error($this->server->getLanguage()->translate(KnownTranslationFactory::pocketmine_command_failure_console($sender->getName(), $target->getName())));
+				$this->server->getLogger()->error($exception->getTraceAsString());
 			} finally {
 				$timings->stopTiming();
 			}
@@ -460,7 +469,7 @@ class SimpleCommandMap implements CommandMap
 					$treeOverloads[$argNumber] = CommandParameter::enum($paramName, $enum, 0, $optional); // do not collapse because there is an $optional identifier in usage message
 				} elseif (str_contains($paramName, "|")) {
 					$enumValues = explode("|", $paramName);
-					$this->addSoftEnum($enum = new CommandEnum($name . " Enum#" . ++$enumCount, $enumValues, true), false);
+					$enum = $this->addSoftEnum(new CommandEnum($name . " Enum#" . ++$enumCount, $enumValues, true), false);
 					$treeOverloads[$argNumber] = CommandParameter::enum($paramName, $enum, CommandParameter::FLAG_FORCE_COLLAPSE_ENUM, $optional);
 				} else {
 					$paramType = match ($paramType) {
@@ -507,9 +516,10 @@ class SimpleCommandMap implements CommandMap
 
 	/**
 	 * @param string $name
-	 * @phpstan-param string[] $aliases
+	 * @param array $aliases
 	 * @param string $description
 	 * @return CommandData
+	 * @phpstan-param string[] $aliases
 	 */
 	private function generateDefaultCommandData(string $name, array $aliases, string $description): CommandData
 	{
@@ -528,13 +538,13 @@ class SimpleCommandMap implements CommandMap
 		);
 	}
 
-	public function addManualOverride(string $commandName, CommandData $data, bool $sendPacket = true): self
+	public function addManualOverride(string $commandName, CommandData $data, bool $sendPacket = true): CommandData
 	{
 		$this->manualOverrides[$commandName] = $data;
-		if (!$sendPacket) return $this;
+		if (!$sendPacket) return $data;
 		foreach ($this->server->getOnlinePlayers() as $player)
 			$player->getNetworkSession()->sendDataPacket(new AvailableCommandsPacket());
-		return $this;
+		return $data;
 	}
 
 	/**
@@ -545,13 +555,12 @@ class SimpleCommandMap implements CommandMap
 		return $this->manualOverrides;
 	}
 
-	public function addDebugCommand(string $commandName, bool $sendPacket = true): self
+	public function addDebugCommand(string $commandName, bool $sendPacket = true): void
 	{
 		$this->debugCommands[] = $commandName;
-		if (!$sendPacket) return $this;
+		if (!$sendPacket) return;
 		foreach ($this->server->getOnlinePlayers() as $player)
 			$player->getNetworkSession()->sendDataPacket(new AvailableCommandsPacket());
-		return $this;
 	}
 
 	/**
@@ -562,17 +571,16 @@ class SimpleCommandMap implements CommandMap
 		return $this->debugCommands;
 	}
 
-	public function addHardcodedEnum(CommandEnum $enum, bool $sendPacket = true): self
+	public function addHardcodedEnum(CommandEnum $enum, bool $sendPacket = true): CommandEnum
 	{
 		foreach ($this->softEnums as $softEnum)
 			if ($enum->getName() === $softEnum->getName())
 				throw new InvalidArgumentException("Hardcoded enum is already in soft enum list.");
 		$this->hardcodedEnums[mb_strtolower($enum->getName())] = $enum;
-		if (!$sendPacket)
-			return $this;
+		if (!$sendPacket) return $enum;
 		foreach ($this->server->getOnlinePlayers() as $player)
 			$player->getNetworkSession()->sendDataPacket(new AvailableCommandsPacket());
-		return $this;
+		return $enum;
 	}
 
 	/**
@@ -583,42 +591,40 @@ class SimpleCommandMap implements CommandMap
 		return $this->hardcodedEnums;
 	}
 
-	public function addSoftEnum(CommandEnum $enum, bool $sendPacket = true): self
+	public function addSoftEnum(CommandEnum $enum, bool $sendPacket = true): CommandEnum
 	{
 		foreach (array_merge($this->softEnums, $this->hardcodedEnums) as $enum2)
-			if ($enum->getName() === $enum2->getName())
-				throw new InvalidArgumentException("Enum is already in an enum list.");
+			if ($enum->getName() === $enum2->getName()) return $enum2;
 		$this->softEnums[mb_strtolower($enum->getName())] = $enum;
 		if (!$sendPacket)
-			return $this;
+			return $enum;
 		$pk = UpdateSoftEnumPacket::create($enum->getName(), $enum->getValues(), UpdateSoftEnumPacket::TYPE_ADD);
 		foreach ($this->server->getOnlinePlayers() as $player)
 			$player->getNetworkSession()->sendDataPacket($pk);
-		return $this;
+		return $enum;
 	}
 
-	public function updateSoftEnum(CommandEnum $enum, bool $sendPacket = true): self
+	public function updateSoftEnum(CommandEnum $enum, bool $sendPacket = true): CommandEnum
 	{
 		if (!in_array($enum->getName(), array_keys($this->softEnums), true))
 			throw new InvalidArgumentException("Enum is not in soft enum list.");
 		$this->softEnums[mb_strtolower($enum->getName())] = $enum;
 		if (!$sendPacket)
-			return $this;
+			return $enum;
 		$pk = UpdateSoftEnumPacket::create($enum->getName(), $enum->getValues(), UpdateSoftEnumPacket::TYPE_SET);
 		foreach ($this->server->getOnlinePlayers() as $player)
 			$player->getNetworkSession()->sendDataPacket($pk);
-		return $this;
+		return $enum;
 	}
 
-	public function removeSoftEnum(CommandEnum $enum, bool $sendPacket = true): self
+	public function removeSoftEnum(CommandEnum $enum, bool $sendPacket = true): CommandEnum
 	{
 		unset($this->softEnums[mb_strtolower($enum->getName())]);
-		if (!$sendPacket)
-			return $this;
+		if (!$sendPacket) return $enum;
 		$pk = UpdateSoftEnumPacket::create($enum->getName(), $enum->getValues(), UpdateSoftEnumPacket::TYPE_REMOVE);
 		foreach ($this->server->getOnlinePlayers() as $player)
 			$player->getNetworkSession()->sendDataPacket($pk);
-		return $this;
+		return $enum;
 	}
 
 	/*** @phpstan-return CommandEnum[] */
@@ -627,20 +633,20 @@ class SimpleCommandMap implements CommandMap
 		return $this->softEnums;
 	}
 
-	public function addEnumConstraint(CommandEnumConstraint $enumConstraint): self
+	public function addEnumConstraint(CommandEnumConstraint $enumConstraint): CommandEnumConstraint
 	{
 		foreach ($this->hardcodedEnums as $hardcodedEnum) if ($enumConstraint->getEnum()->getName() === $hardcodedEnum->getName()) {
 			$this->enumConstraints[] = $enumConstraint;
 			foreach ($this->server->getOnlinePlayers() as $player)
 				$player->getNetworkSession()->sendDataPacket(new AvailableCommandsPacket());
-			return $this;
+			return $enumConstraint;
 		}
 		foreach ($this->softEnums as $softEnum) if ($enumConstraint->getEnum()->getName() === $softEnum->getName()) {
 			$this->enumConstraints[] = $enumConstraint;
 			foreach ($this->server->getOnlinePlayers() as $player) {
 				$player->getNetworkSession()->sendDataPacket(new AvailableCommandsPacket());
 			}
-			return $this;
+			return $enumConstraint;
 		}
 		throw new InvalidArgumentException("Enum name does not exist in any Enum list");
 	}

@@ -25,6 +25,7 @@ namespace pocketmine\updater;
 
 use pocketmine\event\server\UpdateNotifyEvent;
 use pocketmine\Server;
+use pocketmine\utils\VersionString;
 use pocketmine\VersionInfo;
 use PrefixedLogger;
 
@@ -40,11 +41,9 @@ class UpdateChecker
 	{
 		$this->server = $server;
 		$this->logger = new PrefixedLogger($server->getLogger(), "Update Checker");
-		$this->endpoint = "https://api.github.com/repos/$endpoint/releases/latest";
-
-		if ($server->getConfigGroup()->getPropertyBool("auto-updater.enabled", true)) {
+		$this->endpoint = "https://api.github.com/repositories/$endpoint/releases";
+		if ($server->getConfigGroup()->getPropertyBool("auto-updater.enabled", true))
 			$this->doCheck();
-		}
 	}
 
 	public function checkUpdateError(string $error): void
@@ -80,7 +79,7 @@ class UpdateChecker
 	public function showConsoleUpdate(): void
 	{
 		if ($this->updateInfo === null) return;
-		$this->logger->warning("Your version of " . $this->server->getName() . " is out of date. Version " . $this->updateInfo->base_version . " was released on " . $this->updateInfo->date);
+		$this->logger->warning("Your version of " . $this->server->getName() . " is out of date. Version " . $this->updateInfo->base_version . " was released on " . date("D M j h:i:s Y", $this->updateInfo->date));
 		$this->logger->warning("Details: " . $this->updateInfo->details_url);
 		$this->logger->warning("Download: " . $this->updateInfo->download_url);
 	}
@@ -106,7 +105,8 @@ class UpdateChecker
 	 */
 	protected function checkUpdate(UpdateInfo $updateInfo): void
 	{
-		if (VersionInfo::BASE_VERSION != $updateInfo->base_version) $this->updateInfo = $updateInfo;
+		if ((new VersionString(VersionInfo::BASE_VERSION))->compare(new VersionString($updateInfo->base_version), true) > 0)
+			$this->updateInfo = $updateInfo;
 	}
 
 	/**

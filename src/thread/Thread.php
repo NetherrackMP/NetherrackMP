@@ -38,7 +38,7 @@ use pocketmine\scheduler\AsyncTask;
 abstract class Thread extends NativeThread{
 	use CommonThreadPartsTrait;
 
-	public function start(int $options = NativeThread::INHERIT_NONE) : bool{
+	public function start(mixed $options = NativeThread::INHERIT_NONE) : bool{
 		//this is intentionally not traitified
 		ThreadManager::getInstance()->add($this);
 

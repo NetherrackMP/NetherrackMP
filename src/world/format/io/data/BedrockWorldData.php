@@ -190,10 +190,10 @@ class BedrockWorldData extends BaseNbtWorldData
 			->setByte(self::TAG_FIRE_DAMAGE, 1)
 			->setByte(self::TAG_ACHIEVEMENTS_DISABLED, 1) //badly named, this actually determines whether achievements can be earned in this world...
 			->setByte(self::TAG_IMMUTABLE_WORLD, 0)
-			->setFloat(self::TAG_LIGHTNING_LEVEL, 0.0)
+			->setFloat(self::TAG_LIGHTNING_LEVEL, 0.3)
 			->setInt(self::TAG_LIGHTNING_TIME, 0)
 			->setByte(self::TAG_PVP, 1)
-			->setFloat(self::TAG_RAIN_LEVEL, 0.0)
+			->setFloat(self::TAG_RAIN_LEVEL, 0.3)
 			->setInt(self::TAG_RAIN_TIME, 0)
 			->setByte(self::TAG_TEXTURE_PACKS_REQUIRED, 0)
 			->setByte(self::TAG_COMMANDS_ENABLED, 1)

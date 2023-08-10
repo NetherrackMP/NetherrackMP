@@ -46,11 +46,24 @@ class UpdateCheckTask extends AsyncTask
 		$error = "";
 		$response = Internet::getURL($this->endpoint, 5, [], $error);
 		$this->error = $error;
+		if (is_null($response)) return;
 		$response = json_decode($response->getBody(), true);
 		if (isset($response["message"])) {
 			$this->error = $response["message"];
 			return;
 		}
+		$latest = null;
+		foreach ($response as $res) {
+			$res["published_timestamp"] = strtotime($res["published_at"]);
+			if (!$latest || $res["published_timestamp"] > $latest["published_timestamp"]) {
+				$latest = $res;
+			}
+		}
+		if (is_null($latest)) {
+			$this->error = "No release was found.";
+			return;
+		}
+		$response = $latest;
 		$asset = null;
 		foreach ($response["assets"] as $a) {
 			if ($a["name"] == "Netherrack-MP.phar") {
@@ -60,7 +73,7 @@ class UpdateCheckTask extends AsyncTask
 		}
 		$this->setResult(new UpdateInfo(
 			$response["tag_name"],
-			$response["published_at"],
+			$response["published_timestamp"],
 			$response["url"],
 			$asset
 		));

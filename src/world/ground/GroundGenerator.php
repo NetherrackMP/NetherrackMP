@@ -22,6 +22,7 @@ class GroundGenerator
 	protected Block $topMaterial;
 	protected Block $groundMaterial;
 	protected int $bedrockRoughness = 5;
+    protected int $deepslateRoughness = 5;
 
 	public function __construct(?Block $topMaterial = null, ?Block $groundMaterial = null)
 	{
@@ -90,9 +91,11 @@ class GroundGenerator
 		$dpY = OverworldGenerator::$DEEPSLATE_ON ? World::Y_MIN : 0;
 
 		for ($y = World::Y_MAX - 1; $y >= $dpY; --$y) {
-			if ($y <= $random->nextBoundedInt($this->bedrockRoughness) + $dpY) {
-				$chunk->setBlockStateId($blockX, $y, $blockZ, $bedrock);
-			} else {
+            if ($y <= $random->nextBoundedInt($this->bedrockRoughness) + $dpY) {
+                $chunk->setBlockStateId($blockX, $y, $blockZ, $bedrock);
+            }else if ($y <= $random->nextBoundedInt($this->deepslateRoughness)) {
+                $chunk->setBlockStateId($blockX, $y, $blockZ, $deepslate);
+            } else {
 				$mat = $registry->fromStateId($chunk->getBlockStateId($blockX, $y, $blockZ));
 				$matId = $mat->getTypeId();
 				if ($matId === BlockTypeIds::AIR) {

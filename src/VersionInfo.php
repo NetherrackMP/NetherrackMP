@@ -31,8 +31,8 @@ use function str_repeat;
 
 final class VersionInfo{
 	public const NAME = "Netherrack-MP";
-	public const BASE_VERSION = "5.0.0-dev.2";
-	public const IS_DEVELOPMENT_BUILD = true;
+	public const BASE_VERSION = "5.3.0-dev.3";
+	public const IS_DEVELOPMENT_BUILD = false;
 	public const BUILD_CHANNEL = "stable";
 
 	/**

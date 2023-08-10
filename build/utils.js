@@ -13,7 +13,7 @@ const COMPOSER_HASH = "e21205b207c3ff031906575712edab6f13eb0b361f2085f1f1237b712
 
 export const runCommand = command => new Promise((res, rej) => exec(command, (error, stdout, stderr) => {
 	if (error) return rej(error);
-	if (stderr && !stderr.startsWith("> @php")) return rej(new Error(stderr));
+	if (stderr && !stderr.includes("\n> @php")) return rej(new Error(stderr));
 	res();
 }));
 

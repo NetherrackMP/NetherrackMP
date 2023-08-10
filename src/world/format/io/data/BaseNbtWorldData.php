@@ -32,14 +32,14 @@ use pocketmine\world\format\io\WorldData;
 use function file_exists;
 
 abstract class BaseNbtWorldData implements WorldData{
-	protected const TAG_LEVEL_NAME = "LevelName";
-	protected const TAG_GENERATOR_NAME = "generatorName";
-	protected const TAG_GENERATOR_OPTIONS = "generatorOptions";
-	protected const TAG_RANDOM_SEED = "RandomSeed";
-	protected const TAG_TIME = "Time";
-	protected const TAG_SPAWN_X = "SpawnX";
-	protected const TAG_SPAWN_Y = "SpawnY";
-	protected const TAG_SPAWN_Z = "SpawnZ";
+	public const TAG_LEVEL_NAME = "LevelName";
+	public const TAG_GENERATOR_NAME = "generatorName";
+	public const TAG_GENERATOR_OPTIONS = "generatorOptions";
+	public const TAG_RANDOM_SEED = "RandomSeed";
+	public const TAG_TIME = "Time";
+	public const TAG_SPAWN_X = "SpawnX";
+	public const TAG_SPAWN_Y = "SpawnY";
+	public const TAG_SPAWN_Z = "SpawnZ";
 
 	protected CompoundTag $compoundTag;
 

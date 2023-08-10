@@ -651,7 +651,7 @@ class Server
 	}
 
 	/**
-	 * @deprecated This method's results are unpredictable. The string "Steve" will return the player named "SteveJobs",
+	 * This method's results are unpredictable. The string "Steve" will return the player named "SteveJobs",
 	 * until another player named "SteveJ" joins the server, at which point it will return that player instead. Prefer
 	 * filtering the results of {@link Server::getOnlinePlayers()} yourself.
 	 *
@@ -1075,7 +1075,7 @@ class Server
 			$this->worldManager->setAutoSave($this->configGroup->getConfigBool("auto-save", $this->worldManager->getAutoSave()));
 			$this->worldManager->setAutoSaveInterval($this->configGroup->getPropertyInt("ticks-per.autosave", $this->worldManager->getAutoSaveInterval()));
 
-			$this->updater = new UpdateChecker($this, $this->configGroup->getPropertyString("auto-updater.repo", "netherrackmp"));
+			$this->updater = new UpdateChecker($this, $this->configGroup->getPropertyString("auto-updater.repo", "675066387"));
 
 			$this->queryInfo = new QueryInfo($this);
 

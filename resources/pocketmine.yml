@@ -164,7 +164,7 @@ auto-updater:
   preferred-channel: stable
   #If using a development version, it will suggest changing the channel
   suggest-channels: true
-  repo: netherrackmp/netherrackmp
+  repo: 675066387
 
 timings:
   #Choose the host to use for viewing your timings results.
@@ -223,6 +223,10 @@ worlds:
   # seed: 404
   # generator: FLAT
   # preset: 2;bedrock,59xstone,3xdirt,grass;1
+  world_nether:
+    generator: nether
+  world_end:
+    generator: end
 
 plugins:
   #Setting this to true will cause the legacy structure to be used where plugin data is placed inside the --plugins dir.
