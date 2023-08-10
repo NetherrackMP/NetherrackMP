@@ -103,8 +103,7 @@ class Language
 	 */
 	public function __construct(string $lang)
 	{
-		$this->langName = strtolower($lang);
-		self::loadLang($this->langName);
+		self::loadLang($this->langName = strtolower($lang));
 	}
 
 	public static function init(): void

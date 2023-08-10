@@ -51,37 +51,44 @@ class WeatherCommand extends VanillaCommand
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args)
 	{
-		if (!$sender instanceof Player) {
-			$worlds = $sender->getServer()->getWorldManager()->getWorlds();
-		} else $worlds = [$sender->getWorld()];
-		if ($sender instanceof Player) $sender->getWorld()->summonLightningBolt($sender->getLocation());
+		if ($sender instanceof Player) $world = $sender->getWorld();
 		if (!isset($args[0])) throw new InvalidCommandSyntaxException();
-		if ($args[0] === "clear") {
-			foreach ($worlds as $world)
+		if ($args[0] == "clear" || $args[0] == "query") {
+			if (!isset($world)) {
+				if (!isset($args[1])) throw new InvalidCommandSyntaxException();
+				$world = $sender->getServer()->getWorldManager()->getWorldByName($args[1]);
+				if (!$world instanceof World) {
+					$sender->sendMessage(KnownTranslationFactory::commands_generic_world_notFound($args[1]));
+					return;
+				}
+			}
+			if ($args[0] == "clear") {
 				$world->setWeather(World::WEATHER_CLEAR, 0);
-			$sender->sendMessage(KnownTranslationFactory::commands_weather_success_clear());
-			return;
-		}
-		if ($args[0] === "query") {
-			foreach ($worlds as $world) {
+				$sender->sendMessage(KnownTranslationFactory::commands_weather_success_clear());
+			} else {
 				$weather = self::translateWeather($world->getWeather());
-				if (count($worlds) == 1) $sender->sendMessage(KnownTranslationFactory::commands_weather_query($weather));
-				else $sender->sendMessage(KnownTranslationFactory::commands_weather_query_specific($weather, $world->getDisplayName()));
+				$sender->sendMessage(KnownTranslationFactory::commands_weather_query($weather));
 			}
 			return;
 		}
 		$duration = $args[1] ?? null;
 		if (!is_null($duration) && !is_numeric($duration)) throw new InvalidCommandSyntaxException();
-		if ($args[0] === "rain") {
-			foreach ($worlds as $world)
+		if ($args[0] == "rain" || $args[0] == "thunder") {
+			if (!isset($world)) {
+				if (!isset($args[2])) throw new InvalidCommandSyntaxException();
+				$world = $sender->getServer()->getWorldManager()->getWorldByName($args[1]);
+				if (!$world instanceof World) {
+					$sender->sendMessage(KnownTranslationFactory::commands_generic_world_notFound($args[1]));
+					return;
+				}
+			}
+			if ($args[0] === "rain") {
 				$world->setWeather(World::WEATHER_MODERATE_RAIN, $duration);
-			$sender->sendMessage(KnownTranslationFactory::commands_weather_success_rain());
-			return;
-		}
-		if ($args[0] === "thunder") {
-			foreach ($worlds as $world)
+				$sender->sendMessage(KnownTranslationFactory::commands_weather_success_rain());
+			} else {
 				$world->setWeather(World::WEATHER_MODERATE_THUNDER, $duration);
-			$sender->sendMessage(KnownTranslationFactory::commands_weather_success_thunder());
+				$sender->sendMessage(KnownTranslationFactory::commands_weather_success_thunder());
+			}
 			return;
 		}
 		throw new InvalidCommandSyntaxException();

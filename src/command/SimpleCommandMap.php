@@ -321,10 +321,11 @@ class SimpleCommandMap implements CommandMap
 				if ($target->testPermission($sender)) $target->execute($sender, $sentCommandLabel, $args);
 			} catch (InvalidCommandSyntaxException) {
 				$sender->sendMessage(KnownTranslationFactory::commands_generic_usage($target->getUsageMessage()));
-			} catch (Throwable $exception) {
+			} catch (Throwable $e) {
 				$sender->sendMessage(KnownTranslationFactory::pocketmine_command_failure($target->getName()));
 				$this->server->getLogger()->error($this->server->getLanguage()->translate(KnownTranslationFactory::pocketmine_command_failure_console($sender->getName(), $target->getName())));
-				$this->server->getLogger()->error($exception->getTraceAsString());
+				$this->server->getLogger()->error($e->getMessage());
+				$this->server->getLogger()->error($e->getTraceAsString());
 			} finally {
 				$timings->stopTiming();
 			}

@@ -239,6 +239,7 @@ class RakLibInterface implements ServerEventListener, AdvancedNetworkInterface
 			} catch (Throwable $e) {
 				//record the name of the player who caused the crash, to make it easier to find the reproducing steps
 				$this->server->getLogger()->emergency("Crash occurred while handling a packet from session: $name");
+				$this->server->getLogger()->error($e->getMessage());
 				$this->server->getLogger()->error($e->getTraceAsString());
 				$session->disconnectWithError(KnownTranslationFactory::pocketmine_disconnect_error_internal());
 			}

@@ -51,7 +51,7 @@ class MountainsBiome extends GrassyBiome
 		$l = [
 			new OreType(VanillaBlocks::EMERALD_ORE(), VanillaBlocks::STONE(), 11, 1, 0, 32)
 		];
-		if (OverworldGenerator::$DEEPSLATE_ON)
+		if (isset(OverworldGenerator::$DEEPSLATE_ON) && OverworldGenerator::$DEEPSLATE_ON)
 			$l[] = new OreType(VanillaBlocks::DEEPSLATE_EMERALD_ORE(), VanillaBlocks::DEEPSLATE(), 11, 1, World::Y_MIN, 0);
 		$ores->setOreTypes($l);
 
