@@ -38,11 +38,13 @@ export default async function build() {
 		const T = Date.now();
 		const path = pathToFileURL(join(DIR, "tasks", i + ".js"));
 		const task = await import(path.href);
-		await task.default(text => {
+		try {
+			await task.default();
+		} catch (e) {
 			console.log(`Build failed at the "${task.name}" task!`);
-			console.error(text);
+			console.error(e);
 			process.exit();
-		});
+		}
 		console.log(`(${++done}/${tasks.size}) ${task.name} (${Date.now() - T} ms)`);
 	}));
 	console.log("Done (" + (Date.now() - ST) + "ms)");

@@ -381,6 +381,8 @@ final class ItemSerializerDeserializerRegistrar
 		$this->map1to1Item(Ids::WOODEN_SWORD, Items::WOODEN_SWORD());
 		$this->map1to1Item(Ids::WRITABLE_BOOK, Items::WRITABLE_BOOK());
 		$this->map1to1Item(Ids::WRITTEN_BOOK, Items::WRITTEN_BOOK());
+		$this->map1to1Item(Ids::FIREWORK_ROCKET, Items::FIREWORKS());
+		$this->map1to1Item(Ids::ELYTRA, Items::ELYTRA());
 
 		foreach (array_keys(VanillaItems::SPAWN_ITEMS) as $n) {
 			$n = strtoupper($n) . "_SPAWN_EGG";

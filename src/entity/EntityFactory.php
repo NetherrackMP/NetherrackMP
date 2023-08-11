@@ -4,7 +4,7 @@
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | "_ \ / _ \_____| |\/| | |_) |
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
  * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
@@ -34,6 +34,7 @@ use pocketmine\data\SavedDataLoadingException;
 use pocketmine\entity\EntityDataHelper as Helper;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\object\FallingBlock;
+use pocketmine\entity\object\FireworkRocket;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\object\Painting;
 use pocketmine\entity\object\PaintingMotive;
@@ -89,19 +90,19 @@ final class EntityFactory
 
 		$this->register(Arrow::class, function (World $world, CompoundTag $nbt): Arrow {
 			return new Arrow(Helper::parseLocation($nbt, $world), null, $nbt->getByte(Arrow::TAG_CRIT, 0) === 1, $nbt);
-		}, ['Arrow', 'minecraft:arrow']);
+		}, ["Arrow", "minecraft:arrow"]);
 
 		$this->register(Egg::class, function (World $world, CompoundTag $nbt): Egg {
 			return new Egg(Helper::parseLocation($nbt, $world), null, $nbt);
-		}, ['Egg', 'minecraft:egg']);
+		}, ["Egg", "minecraft:egg"]);
 
 		$this->register(EnderPearl::class, function (World $world, CompoundTag $nbt): EnderPearl {
 			return new EnderPearl(Helper::parseLocation($nbt, $world), null, $nbt);
-		}, ['ThrownEnderpearl', 'minecraft:ender_pearl']);
+		}, ["ThrownEnderpearl", "minecraft:ender_pearl"]);
 
 		$this->register(ExperienceBottle::class, function (World $world, CompoundTag $nbt): ExperienceBottle {
 			return new ExperienceBottle(Helper::parseLocation($nbt, $world), null, $nbt);
-		}, ['ThrownExpBottle', 'minecraft:xp_bottle']);
+		}, ["ThrownExpBottle", "minecraft:xp_bottle"]);
 
 		$this->register(ExperienceOrb::class, function (World $world, CompoundTag $nbt): ExperienceOrb {
 			$value = 1;
@@ -112,11 +113,11 @@ final class EntityFactory
 			}
 
 			return new ExperienceOrb(Helper::parseLocation($nbt, $world), $value, $nbt);
-		}, ['XPOrb', 'minecraft:xp_orb']);
+		}, ["XPOrb", "minecraft:xp_orb"]);
 
 		$this->register(FallingBlock::class, function (World $world, CompoundTag $nbt): FallingBlock {
 			return new FallingBlock(Helper::parseLocation($nbt, $world), FallingBlock::parseBlockNBT(RuntimeBlockStateRegistry::getInstance(), $nbt), $nbt);
-		}, ['FallingSand', 'minecraft:falling_block']);
+		}, ["FallingSand", "minecraft:falling_block"]);
 
 		$this->register(ItemEntity::class, function (World $world, CompoundTag $nbt): ItemEntity {
 			$itemTag = $nbt->getCompoundTag(ItemEntity::TAG_ITEM);
@@ -129,7 +130,7 @@ final class EntityFactory
 				throw new SavedDataLoadingException("Item is invalid");
 			}
 			return new ItemEntity(Helper::parseLocation($nbt, $world), $item, $nbt);
-		}, ['Item', 'minecraft:item']);
+		}, ["Item", "minecraft:item"]);
 
 		$this->register(Painting::class, function (World $world, CompoundTag $nbt): Painting {
 			$motive = PaintingMotive::getMotiveByName($nbt->getString(Painting::TAG_MOTIVE));
@@ -146,15 +147,15 @@ final class EntityFactory
 			}
 
 			return new Painting(Helper::parseLocation($nbt, $world), $blockIn, $facing, $motive, $nbt);
-		}, ['Painting', 'minecraft:painting']);
+		}, ["Painting", "minecraft:painting"]);
 
 		$this->register(PrimedTNT::class, function (World $world, CompoundTag $nbt): PrimedTNT {
 			return new PrimedTNT(Helper::parseLocation($nbt, $world), $nbt);
-		}, ['PrimedTnt', 'PrimedTNT', 'minecraft:tnt']);
+		}, ["PrimedTnt", "PrimedTNT", "minecraft:tnt"]);
 
 		$this->register(Snowball::class, function (World $world, CompoundTag $nbt): Snowball {
 			return new Snowball(Helper::parseLocation($nbt, $world), null, $nbt);
-		}, ['Snowball', 'minecraft:snowball']);
+		}, ["Snowball", "minecraft:snowball"]);
 
 		$this->register(SplashPotion::class, function (World $world, CompoundTag $nbt): SplashPotion {
 			$potionType = PotionTypeIdMap::getInstance()->fromId($nbt->getShort(SplashPotion::TAG_POTION_ID, PotionTypeIds::WATER));
@@ -162,11 +163,15 @@ final class EntityFactory
 				throw new SavedDataLoadingException("No such potion type");
 			}
 			return new SplashPotion(Helper::parseLocation($nbt, $world), null, $potionType, $nbt);
-		}, ['ThrownPotion', 'minecraft:potion', 'thrownpotion']);
+		}, ["ThrownPotion", "minecraft:potion", "thrownpotion"]);
 
 		$this->register(Human::class, function (World $world, CompoundTag $nbt): Human {
 			return new Human(Helper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt);
-		}, ['Human']);
+		}, ["Human"]);
+
+		$this->register(FireworkRocket::class, static function (World $world, CompoundTag $nbt): FireworkRocket {
+			return new FireworkRocket(EntityDataHelper::parseLocation($nbt, $world), Item::nbtDeserialize($nbt->getCompoundTag("Item")));
+		}, ["minecraft:fireworks","Fireworks"]);
 
 		foreach (VanillaItems::SPAWN_ITEMS as $name => $class)
 			$this->register($class, function (World $world, CompoundTag $nbt) use ($class): Entity {

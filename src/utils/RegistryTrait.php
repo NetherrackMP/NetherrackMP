@@ -32,8 +32,8 @@ use function preg_match;
  * This trait allows a class to simulate object class constants, since PHP doesn't currently support this.
  * These faux constants are exposed in static class methods, which are handled using __callStatic().
  *
- * Classes using this trait need to include \@method tags in their class docblock for every faux constant.
- * Alternatively, just put \@generate-registry-docblock in the docblock and run tools/generate-registry-annotations.php
+ * Classes using this trait need to include `@method` tags in their class docblock for every faux constant.
+ * Alternatively, just put `@generate-registry-docblock` in the docblock and run tools/generate-registry-annotations.php
  */
 trait RegistryTrait{
 	/**
@@ -98,13 +98,13 @@ trait RegistryTrait{
 	}
 
 	/**
-	 * @param string  $name
-	 * @param mixed[] $arguments
+	 * @param string $name
+	 * @param array $arguments
 	 * @phpstan-param list<mixed> $arguments
 	 *
 	 * @return object
 	 */
-	public static function __callStatic($name, $arguments){
+	public static function __callStatic(string $name, array $arguments){
 		if(count($arguments) > 0){
 			throw new \ArgumentCountError("Expected exactly 0 arguments, " . count($arguments) . " passed");
 		}

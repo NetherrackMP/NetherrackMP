@@ -300,16 +300,18 @@ final class ItemTypeIds
 	public const MANGROVE_BOAT = 20259;
 	public const GLOW_BERRIES = 20260;
 	public const CHERRY_SIGN = 20261;
+	public const FIREWORKS = 20262;
+	public const ELYTRA = 20263;
 
-	public const SHEEP_SPAWN_EGG = 20262;
-	public const ZOMBIE_SPAWN_EGG = 20263;
-	public const VILLAGER_SPAWN_EGG = 20264;
-	public const SQUID_SPAWN_EGG = 20265;
-	public const CHICKEN_SPAWN_EGG = 20266;
-	public const COW_SPAWN_EGG = 20267;
-	public const DONKEY_SPAWN_EGG = 20268;
+	public const SHEEP_SPAWN_EGG = 20264;
+	public const ZOMBIE_SPAWN_EGG = 20265;
+	public const VILLAGER_SPAWN_EGG = 20266;
+	public const SQUID_SPAWN_EGG = 20267;
+	public const CHICKEN_SPAWN_EGG = 20268;
+	public const COW_SPAWN_EGG = 20269;
+	public const DONKEY_SPAWN_EGG = 20270;
 
-	public const FIRST_UNUSED_ITEM_ID = 20269;
+	public const FIRST_UNUSED_ITEM_ID = 20270;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_ITEM_ID;
 

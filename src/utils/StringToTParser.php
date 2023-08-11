@@ -36,7 +36,8 @@ use function trim;
  *
  * @phpstan-template T
  */
-abstract class StringToTParser{
+abstract class StringToTParser
+{
 
 	/**
 	 * @var \Closure[]
@@ -45,16 +46,16 @@ abstract class StringToTParser{
 	private array $callbackMap = [];
 
 	/** @phpstan-param \Closure(string $input) : T $callback */
-	public function register(string $alias, \Closure $callback) : void{
+	public function register(string $alias, \Closure $callback): void
+	{
 		$key = $this->reprocess($alias);
-		if(isset($this->callbackMap[$key])){
-			throw new \InvalidArgumentException("Alias \"$key\" is already registered");
-		}
+		if (isset($this->callbackMap[$key])) return;
 		$this->callbackMap[$key] = $callback;
 	}
 
 	/** @phpstan-param \Closure(string $input) : T $callback */
-	public function override(string $alias, \Closure $callback) : void{
+	public function override(string $alias, \Closure $callback): void
+	{
 		$this->callbackMap[$this->reprocess($alias)] = $callback;
 	}
 
@@ -62,21 +63,24 @@ abstract class StringToTParser{
 	 * Tries to parse the specified string into a corresponding instance of T.
 	 * @phpstan-return T|null
 	 */
-	public function parse(string $input){
+	public function parse(string $input)
+	{
 		$key = $this->reprocess($input);
-		if(isset($this->callbackMap[$key])){
+		if (isset($this->callbackMap[$key])) {
 			return ($this->callbackMap[$key])($input);
 		}
 
 		return null;
 	}
 
-	protected function reprocess(string $input) : string{
+	protected function reprocess(string $input): string
+	{
 		return strtolower(str_replace([" ", "minecraft:"], ["_", ""], trim($input)));
 	}
 
 	/** @return string[]|int[] */
-	public function getKnownAliases() : array{
+	public function getKnownAliases(): array
+	{
 		return array_keys($this->callbackMap);
 	}
 }

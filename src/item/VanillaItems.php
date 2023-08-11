@@ -154,6 +154,7 @@ use pocketmine\world\World;
  * @method static Dye DYE()
  * @method static Item ECHO_SHARD()
  * @method static Egg EGG()
+ * @method static Elytra ELYTRA()
  * @method static Item EMERALD()
  * @method static GoldenAppleEnchanted ENCHANTED_GOLDEN_APPLE()
  * @method static EnderPearl ENDER_PEARL()
@@ -161,6 +162,7 @@ use pocketmine\world\World;
  * @method static Item FEATHER()
  * @method static Item FERMENTED_SPIDER_EYE()
  * @method static FireCharge FIRE_CHARGE()
+ * @method static Fireworks FIREWORKS()
  * @method static FishingRod FISHING_ROD()
  * @method static Item FLINT()
  * @method static FlintSteel FLINT_AND_STEEL()
@@ -458,6 +460,7 @@ final class VanillaItems
 		self::register("feather", new Item(new IID(Ids::FEATHER), "Feather"));
 		self::register("fermented_spider_eye", new Item(new IID(Ids::FERMENTED_SPIDER_EYE), "Fermented Spider Eye"));
 		self::register("fire_charge", new FireCharge(new IID(Ids::FIRE_CHARGE), "Fire Charge"));
+		self::register("fireworks", new Fireworks(new IID(Ids::FIREWORKS), "Fireworks"));
 		self::register("fishing_rod", new FishingRod(new IID(Ids::FISHING_ROD), "Fishing Rod"));
 		self::register("flint", new Item(new IID(Ids::FLINT), "Flint"));
 		self::register("flint_and_steel", new FlintSteel(new IID(Ids::FLINT_AND_STEEL), "Flint and Steel"));
@@ -660,6 +663,7 @@ final class VanillaItems
 		self::register("leather_cap", new Armor(new IID(Ids::LEATHER_CAP), "Leather Cap", new ArmorTypeInfo(1, 56, ArmorInventory::SLOT_HEAD)));
 		self::register("netherite_helmet", new Armor(new IID(Ids::NETHERITE_HELMET), "Netherite Helmet", new ArmorTypeInfo(3, 408, ArmorInventory::SLOT_HEAD, 3, true)));
 		self::register("turtle_helmet", new TurtleHelmet(new IID(Ids::TURTLE_HELMET), "Turtle Shell", new ArmorTypeInfo(2, 276, ArmorInventory::SLOT_HEAD)));
+		self::register("elytra", new Elytra(new IID(Ids::ELYTRA), "Elytra", new ArmorTypeInfo(0, 432, ArmorInventory::SLOT_CHEST)));
 
 		self::register("chainmail_leggings", new Armor(new IID(Ids::CHAINMAIL_LEGGINGS), "Chainmail Leggings", new ArmorTypeInfo(4, 226, ArmorInventory::SLOT_LEGS)));
 		self::register("diamond_leggings", new Armor(new IID(Ids::DIAMOND_LEGGINGS), "Diamond Leggings", new ArmorTypeInfo(6, 496, ArmorInventory::SLOT_LEGS, 2)));

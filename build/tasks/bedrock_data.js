@@ -3,10 +3,10 @@ import fs from "fs";
 
 export const name = "Bedrock data files";
 
-export default async function (exit) {
+export default async function () {
 	const bedrockDataFolderPath = join(DIR, "../vendor/pocketmine/bedrock-data");
 	if (!fs.existsSync(bedrockDataFolderPath) || !fs.statSync(bedrockDataFolderPath).isDirectory())
-		exit("File not found: " + bedrockDataFolderPath);
+		throw "File not found: " + bedrockDataFolderPath;
 	let content = `<?php
 
 declare(strict_types=1);
