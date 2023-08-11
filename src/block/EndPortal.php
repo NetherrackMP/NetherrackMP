@@ -24,50 +24,17 @@ declare(strict_types=1);
 namespace pocketmine\block;
 
 use pocketmine\block\utils\SupportType;
-use pocketmine\data\runtime\RuntimeDataDescriber;
 use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityPortalEnterEvent;
 use pocketmine\item\Item;
-use pocketmine\math\Axis;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\world\World;
 
-class NetherPortal extends Transparent
+class EndPortal extends Transparent
 {
-
-	protected int $axis = Axis::X;
-
-	protected function describeBlockOnlyState(RuntimeDataDescriber $w): void
-	{
-		$w->horizontalAxis($this->axis);
-	}
-
-	public function getAxis(): int
-	{
-		return $this->axis;
-	}
-
-	/**
-	 * @return $this
-	 * @throws \InvalidArgumentException
-	 */
-	public function setAxis(int $axis): self
-	{
-		if ($axis !== Axis::X && $axis !== Axis::Z) {
-			throw new \InvalidArgumentException("Invalid axis");
-		}
-		$this->axis = $axis;
-		return $this;
-	}
-
-	public function getBreakInfo(): BlockBreakInfo
-	{
-		return new BlockBreakInfo(-1, BlockToolType::NONE, 0, 3_600_000);
-	}
-
 	public function getLightLevel(): int
 	{
-		return 11;
+		return 15;
 	}
 
 	public function isSolid(): bool
@@ -93,10 +60,15 @@ class NetherPortal extends Transparent
 		return [];
 	}
 
+	public function getBreakInfo(): BlockBreakInfo
+	{
+		return new BlockBreakInfo(-1, BlockToolType::NONE, 0, 3_600_000);
+	}
+
 	public function onEntityInside(Entity $entity): bool
 	{
 		$world = $entity->getWorld();
-		$ev = new EntityPortalEnterEvent($entity, $world->getFolderName() . "_nether", EntityPortalEnterEvent::TYPE_NETHER);
+		$ev = new EntityPortalEnterEvent($entity, $world->getFolderName() . "_end", EntityPortalEnterEvent::TYPE_END);
 		if ($ev->isCancelled()) return false;
 		$endWorld = $world->getServer()->getWorldManager()->getWorldByName($ev->getTargetWorldName());
 		if ($endWorld instanceof World) {

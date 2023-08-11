@@ -24,11 +24,12 @@ class OrePopulator implements Populator{
 	 * redstone, diamond and lapis lazuli ores.
 	 */
 	public function __construct(){
-		$this->addOre(new OreType(VanillaBlocks::DIRT(), World::Y_MIN, 256, 32), 10);
+		$this->addOre(new OreType(VanillaBlocks::DIRT(), 0, 256, 32), 10);
 		$this->addOre(new OreType(VanillaBlocks::GRAVEL(), World::Y_MIN, 256, 32), 8);
-		$this->addOre(new OreType(VanillaBlocks::GRANITE(), World::Y_MIN, 80, 32), 10);
-		$this->addOre(new OreType(VanillaBlocks::DIORITE(), World::Y_MIN, 80, 32), 10);
-		$this->addOre(new OreType(VanillaBlocks::ANDESITE(), World::Y_MIN, 80, 32), 10);
+		$this->addOre(new OreType(VanillaBlocks::GRANITE(), 0, 80, 32), 10);
+		$this->addOre(new OreType(VanillaBlocks::TUFF(), World::Y_MIN, 0, 32), 16);
+		$this->addOre(new OreType(VanillaBlocks::DIORITE(), 0, 80, 32), 10);
+		$this->addOre(new OreType(VanillaBlocks::ANDESITE(), 0, 80, 32), 10);
 		$this->addOre(new OreType(VanillaBlocks::COAL_ORE(), World::Y_MIN, 128, 16), 20);
 		$this->addOre(new OreType(VanillaBlocks::IRON_ORE(), World::Y_MIN, 64, 8), 20);
 		$this->addOre(new OreType(VanillaBlocks::GOLD_ORE(), World::Y_MIN, 32, 8), 2);

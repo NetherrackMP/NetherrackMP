@@ -899,7 +899,7 @@ class Server
 					"auto-save" => true,
 					"view-distance" => self::DEFAULT_MAX_VIEW_DISTANCE,
 					"xbox-auth" => true,
-					"language" => "eng"
+					"language" => "en_US"
 				])
 			);
 

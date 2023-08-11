@@ -25,6 +25,7 @@ namespace pocketmine {
 
 	use Composer\InstalledVersions;
 	use pocketmine\errorhandler\ErrorToExceptionHandler;
+	use pocketmine\lang\Language;
 	use pocketmine\thread\ThreadManager;
 	use pocketmine\thread\ThreadSafeClassLoader;
 	use pocketmine\utils\Filesystem;
@@ -322,6 +323,10 @@ JIT_WARNING
 		emit_performance_warnings($logger);
 
 		$exitCode = 0;
+		foreach (scandir(\pocketmine\LOCALE_DATA_PATH) as $item) {
+			if (!str_ends_with($item, ".ini")) continue;
+			Language::loadLang(substr($item, 0, strlen($item) - 4));
+		}
 		do {
 			if (!file_exists(Path::join($dataPath, "server.properties")) && !isset($opts["no-wizard"])) {
 				$installer = new SetupWizard($dataPath);

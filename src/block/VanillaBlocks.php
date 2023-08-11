@@ -410,6 +410,7 @@ use function mb_strtolower;
  * @method static EnchantingTable ENCHANTING_TABLE()
  * @method static EnderChest ENDER_CHEST()
  * @method static EndPortalFrame END_PORTAL_FRAME()
+ * @method static EndPortal END_PORTAL()
  * @method static EndRod END_ROD()
  * @method static Opaque END_STONE()
  * @method static Opaque END_STONE_BRICKS()
@@ -846,6 +847,7 @@ final class VanillaBlocks{
 		self::register("dried_kelp", new DriedKelp(new BID(Ids::DRIED_KELP), "Dried Kelp Block", new Info(new BreakInfo(0.5, ToolType::NONE, 0, 12.5))));
 		self::register("emerald", new Opaque(new BID(Ids::EMERALD), "Emerald Block", new Info(BreakInfo::pickaxe(5.0, ToolTier::IRON(), 30.0))));
 		self::register("enchanting_table", new EnchantingTable(new BID(Ids::ENCHANTING_TABLE, TileEnchantingTable::class), "Enchanting Table", new Info(BreakInfo::pickaxe(5.0, ToolTier::WOOD(), 6000.0))));
+		self::register("end_portal", new EndPortal(new BID(Ids::END_PORTAL), "End Portal", new Info(BreakInfo::indestructible())));
 		self::register("end_portal_frame", new EndPortalFrame(new BID(Ids::END_PORTAL_FRAME), "End Portal Frame", new Info(BreakInfo::indestructible())));
 		self::register("end_rod", new EndRod(new BID(Ids::END_ROD), "End Rod", new Info(BreakInfo::instant())));
 		self::register("end_stone", new Opaque(new BID(Ids::END_STONE), "End Stone", new Info(BreakInfo::pickaxe(3.0, ToolTier::WOOD(), 45.0))));

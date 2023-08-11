@@ -21,6 +21,10 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;
 use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
 use pocketmine\utils\AssumptionFailedError;
+use pocketmine\world\sound\BlastSound;
+use pocketmine\world\sound\LargeBlastSound;
+use pocketmine\world\sound\LaunchSound;
+use pocketmine\world\sound\TwinkleSound;
 
 class FireworkRocket extends Entity
 {
@@ -42,7 +46,7 @@ class FireworkRocket extends Entity
 		$this->setMotion(new Vector3(0.001, 0.05, 0.001));
 		if ($fireworks->getNamedTag()->getCompoundTag("Fireworks") !== null)
 			$this->lifeTime = $lifeTime ?? $fireworks->getRandomizedFlightDuration();
-		$location->getWorld()->broadcastPacketToViewers($location, LevelSoundEventPacket::nonActorSound(LevelSoundEvent::LAUNCH, $location, false));
+		$location->getWorld()->addSound($location, new LaunchSound());
 	}
 
 	protected function tryChangeMovement(): void
@@ -100,14 +104,11 @@ class FireworkRocket extends Entity
 		if ($explosionsTag === null) return;
 		foreach ($explosionsTag->getValue() as $info) {
 			if ($info instanceof CompoundTag) {
-				$this->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::nonActorSound(
-					$info->getByte("FireworkType", 0) === Fireworks::TYPE_HUGE_SPHERE
-						? LevelSoundEvent::LARGE_BLAST : LevelSoundEvent::BLAST,
+				$this->getWorld()->addSound($this->getLocation(), $info->getByte("FireworkType", 0) === Fireworks::TYPE_HUGE_SPHERE
+					? new LargeBlastSound() : new BlastSound());
 
-					$this->location->asVector3(),
-					false
-				));
 				if ($info->getByte("FireworkFlicker", 0) === 1) {
+					$this->getWorld()->addSound($this->getLocation(), new TwinkleSound());
 					$this->getWorld()->broadcastPacketToViewers($this->location, LevelSoundEventPacket::nonActorSound(LevelSoundEvent::TWINKLE, $this->location->asVector3(), false));
 				}
 			}
