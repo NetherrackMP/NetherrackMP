@@ -40,7 +40,7 @@ class EntityPortalEnterEvent extends EntityEvent implements Cancellable{
 	public function __construct(
 		Entity $entity,
 		private string $targetWorldName,
-		private int $type
+		private readonly int $type
 	){
 		$this->entity = $entity;
 	}

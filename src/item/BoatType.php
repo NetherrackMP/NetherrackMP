@@ -42,7 +42,7 @@ use pocketmine\utils\EnumTrait;
  */
 final class BoatType{
 	use EnumTrait {
-		__construct as Enum___construct;
+		EnumTrait::__construct as Enum___construct;
 	}
 
 	protected static function setup() : void{

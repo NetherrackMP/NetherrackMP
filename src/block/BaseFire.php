@@ -29,35 +29,41 @@ use pocketmine\event\entity\EntityCombustByBlockEvent;
 use pocketmine\event\entity\EntityDamageByBlockEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
+use pocketmine\world\GameRules;
 
-abstract class BaseFire extends Flowable{
+abstract class BaseFire extends Flowable
+{
 
-	public function hasEntityCollision() : bool{
+	public function hasEntityCollision(): bool
+	{
 		return true;
 	}
 
-	public function canBeReplaced() : bool{
+	public function canBeReplaced(): bool
+	{
 		return true;
 	}
 
-	public function onEntityInside(Entity $entity) : bool{
+	public function onEntityInside(Entity $entity): bool
+	{
 		$ev = new EntityDamageByBlockEvent($this, $entity, EntityDamageEvent::CAUSE_FIRE, $this->getFireDamage());
 		$entity->attack($ev);
 
 		$ev = new EntityCombustByBlockEvent($this, $entity, 8);
-		if($entity instanceof Arrow){
+		if ($entity instanceof Arrow) {
 			$ev->cancel();
 		}
 		$ev->call();
-		if(!$ev->isCancelled()){
+		if (!$ev->isCancelled()) {
 			$entity->setOnFire($ev->getDuration());
 		}
 		return true;
 	}
 
-	abstract protected function getFireDamage() : int;
+	abstract protected function getFireDamage(): int;
 
-	public function getDropsForCompatibleTool(Item $item) : array{
+	public function getDropsForCompatibleTool(Item $item): array
+	{
 		return [];
 	}
 }

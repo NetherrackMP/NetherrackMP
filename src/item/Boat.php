@@ -23,25 +23,51 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-class Boat extends Item{
-	private BoatType $boatType;
+use pocketmine\block\Block;
+use pocketmine\entity\Location;
+use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\player\Player;
+use pocketmine\entity\object\Boat as BoatEntity;
 
-	public function __construct(ItemIdentifier $identifier, string $name, BoatType $boatType){
-		parent::__construct($identifier, $name);
-		$this->boatType = $boatType;
-	}
+class Boat extends Item
+{
+    private BoatType $boatType;
 
-	public function getType() : BoatType{
-		return $this->boatType;
-	}
+    public function __construct(ItemIdentifier $identifier, string $name, BoatType $boatType)
+    {
+        parent::__construct($identifier, $name);
+        $this->boatType = $boatType;
+    }
 
-	public function getFuelTime() : int{
-		return 1200; //400 in PC
-	}
+    public function getType(): BoatType
+    {
+        return $this->boatType;
+    }
 
-	public function getMaxStackSize() : int{
-		return 1;
-	}
+    public function setBoatType(BoatType $boatType): self
+    {
+        $this->boatType = $boatType;
+        return $this;
+    }
 
-	//TODO
+    public function getFuelTime(): int
+    {
+        return 1200;
+    }
+
+    public function getMaxStackSize(): int
+    {
+        return 1;
+    }
+
+    public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, array &$returnedItems): ItemUseResult
+    {
+        $this->pop();
+        $entity = new BoatEntity(Location::fromObject($blockClicked->getSide($face)->getPosition()->add(0.5, 0.5, 0.5), $player->getWorld(), $player->getLocation()->yaw + 90), CompoundTag::create()
+            ->setString(BoatEntity::TAG_WOOD_TYPE, $this->boatType->name())
+        );
+        $entity->spawnToAll();
+        return ItemUseResult::SUCCESS();
+    }
 }

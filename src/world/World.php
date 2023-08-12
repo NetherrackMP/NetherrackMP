@@ -27,7 +27,6 @@ declare(strict_types=1);
 
 namespace pocketmine\world;
 
-use Exception;
 use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
@@ -49,7 +48,7 @@ use pocketmine\entity\object\ItemEntity;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockUpdateEvent;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\event\block\NaturalBlockBreakEvent;
 use pocketmine\event\entity\EntityDamageByLightningEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\world\ChunkLoadEvent;
@@ -69,7 +68,6 @@ use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\TypeConverter;
@@ -79,12 +77,10 @@ use pocketmine\network\mcpe\protocol\BlockActorDataPacket;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
-use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\entity\PropertySyncData;
 use pocketmine\network\mcpe\protocol\types\Experiments;
-use pocketmine\network\mcpe\protocol\types\FloatGameRule;
-use pocketmine\network\mcpe\protocol\types\IntGameRule;
+use pocketmine\network\mcpe\protocol\types\GameRule;
 use pocketmine\network\mcpe\protocol\types\LevelSettings;
 use pocketmine\network\mcpe\protocol\types\SpawnSettings;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
@@ -101,7 +97,6 @@ use pocketmine\world\biome\Biome;
 use pocketmine\world\biome\BiomeRegistry;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\ChunkData;
-use pocketmine\world\format\io\data\BedrockWorldData;
 use pocketmine\world\format\io\exception\CorruptedChunkException;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
 use pocketmine\world\format\io\WritableWorldProvider;
@@ -120,6 +115,7 @@ use pocketmine\world\particle\Particle;
 use pocketmine\world\sound\BlockPlaceSound;
 use pocketmine\world\sound\Sound;
 use pocketmine\world\utils\SubChunkExplorer;
+use SplQueue;
 use function abs;
 use function array_filter;
 use function array_key_exists;
@@ -287,7 +283,8 @@ class World implements ChunkManager
 	private array $unloadQueue = [];
 
 	private int $time;
-	public bool $stopTime = false;
+	/*** @var GameRule[] */
+	private array $gameRules;
 
 	private int $rainTime;
 	private float $rainLevel;
@@ -321,7 +318,7 @@ class World implements ChunkManager
 	private array $scheduledBlockUpdateQueueIndex = [];
 
 	/** @phpstan-var \SplQueue<int> */
-	private \SplQueue $neighbourBlockUpdateQueue;
+	private SplQueue $neighbourBlockUpdateQueue;
 	/**
 	 * @var true[] blockhash => dummy
 	 * @phpstan-var array<BlockPosHash, true>
@@ -345,10 +342,10 @@ class World implements ChunkManager
 	 */
 	private array $chunkPopulationRequestMap = [];
 	/**
-	 * @var \SplQueue (queue of chunkHashes)
+	 * @var SplQueue (queue of chunkHashes)
 	 * @phpstan-var \SplQueue<ChunkPosHash>
 	 */
-	private \SplQueue $chunkPopulationRequestQueue;
+	private SplQueue $chunkPopulationRequestQueue;
 	/**
 	 * @var true[] chunkHash => dummy
 	 * @phpstan-var array<ChunkPosHash, true>
@@ -544,7 +541,7 @@ class World implements ChunkManager
 			throw new AssumptionFailedError("WorldManager should already have checked that the generator exists");
 		$generator->validateGeneratorOptions($worldData->getGeneratorOptions());
 		$this->generator = $generator->getGeneratorClass();
-		$this->chunkPopulationRequestQueue = new \SplQueue();
+		$this->chunkPopulationRequestQueue = new SplQueue();
 		$this->addOnUnloadCallback(function (): void {
 			$this->logger->debug("Cancelling unfulfilled generation requests");
 
@@ -562,13 +559,14 @@ class World implements ChunkManager
 		$this->scheduledBlockUpdateQueue = new ReversePriorityQueue();
 		$this->scheduledBlockUpdateQueue->setExtractFlags(\SplPriorityQueue::EXTR_BOTH);
 
-		$this->neighbourBlockUpdateQueue = new \SplQueue();
+		$this->neighbourBlockUpdateQueue = new SplQueue();
 
 		$this->time = $worldData->getTime();
 		$this->rainTime = $worldData->getRainTime();
 		$this->rainLevel = $worldData->getRainLevel();
 		$this->lightningTime = $worldData->getLightningTime();
 		$this->lightningLevel = $worldData->getLightningLevel();
+		$this->gameRules = $worldData->getGameRules();
 
 		$cfg = $this->server->getConfigGroup();
 		$this->chunkTickRadius = min($this->server->getViewDistance(), max(0, $cfg->getPropertyInt("chunk-ticking.tick-radius", 4)));
@@ -1010,7 +1008,7 @@ class World implements ChunkManager
 
 	protected function actuallyDoTick(int $currentTick): void
 	{
-		if (!$this->stopTime) {
+		if ($this->getGameRule(GameRules::DO_DAYLIGHT_CYCLE) !== false) {
 			//this simulates an overflow, as would happen in any language which doesn't do stupid things to var types
 			if ($this->time === PHP_INT_MAX) {
 				$this->time = PHP_INT_MIN;
@@ -1027,25 +1025,27 @@ class World implements ChunkManager
 			$this->sendTimeTicker = 0;
 		}
 
-		if (--$this->rainTime <= 0) {
-			if ($this->isRaining()) {
-				$this->rainTime = mt_rand(12000, 180000);
-				$this->rainLevel = 0;
-			} else {
-				$this->rainTime = mt_rand(12000, 24000);
-				$this->rainLevel = mt_rand(1, 3) * 0.3;
+		if ($this->getGameRule(GameRules::DO_WEATHER_CYCLE) !== false) {
+			if (--$this->rainTime <= 0) {
+				if ($this->isRaining()) {
+					$this->rainTime = mt_rand(12000, 180000);
+					$this->rainLevel = 0;
+				} else {
+					$this->rainTime = mt_rand(12000, 24000);
+					$this->rainLevel = mt_rand(1, 3) * 0.3;
+				}
+				$this->broadcastWeather();
 			}
-			$this->broadcastWeather();
-		}
-		if (--$this->lightningTime <= 0) {
-			if ($this->isRainingLightning()) {
-				$this->lightningTime = mt_rand(12000, 180000);
-				$this->lightningLevel = 0;
-			} else {
-				$this->lightningTime = mt_rand(3600, 15600);
-				$this->lightningLevel = mt_rand(1, 3) * 0.3;
+			if (--$this->lightningTime <= 0) {
+				if ($this->isRainingLightning()) {
+					$this->lightningTime = mt_rand(12000, 180000);
+					$this->lightningLevel = 0;
+				} else {
+					$this->lightningTime = mt_rand(3600, 15600);
+					$this->lightningLevel = mt_rand(1, 3) * 0.3;
+				}
+				$this->broadcastWeather();
 			}
-			$this->broadcastWeather();
 		}
 
 		$this->unloadChunks();
@@ -2179,6 +2179,10 @@ class World implements ChunkManager
 
 		} elseif (!$target->getBreakInfo()->isBreakable()) {
 			return false;
+		} else {
+			$ev = new NaturalBlockBreakEvent($target, $item, $drops, $xpDrop);
+			$ev->call();
+			if ($ev->isCancelled()) return false;
 		}
 
 		foreach ($affectedBlocks as $t) {
@@ -2187,7 +2191,7 @@ class World implements ChunkManager
 
 		$item->onDestroyBlock($target, $returnedItems);
 
-		if (count($drops) > 0) {
+		if ($this->getGameRule(GameRules::DO_TILE_DROPS) && count($drops) > 0) {
 			$dropPos = $vector->add(0.5, 0.5, 0.5);
 			foreach ($drops as $drop) {
 				if (!$drop->isNull()) {
@@ -3339,49 +3343,35 @@ class World implements ChunkManager
 		}
 	}
 
-	/**
-	 * @return (BoolGameRule | IntGameRule | FloatGameRule)[]
-	 * @throws Exception
-	 */
+	/*** @return GameRule[] */
 	public function getGameRules(): array
 	{
-		$gamerules = [
-			"naturalregeneration" => new BoolGameRule(false, false)
-		];
-		$worldData = $this->provider->getWorldData();
-		$compoundTag = $worldData->getCompoundTag();
-		foreach (BedrockWorldData::GAME_RULE_TAGS as $rule) { // todo: java gamerules
-			if (isset($gamerules[$rule])) continue;
-			$tag = $compoundTag->getTag($rule);
-			if (is_null($tag)) continue;
-			$type = $tag->getType();
-			$value = $tag->getValue();
-			if ($type == NBT::TAG_Byte) $gamerules[$rule] = new BoolGameRule($value == 1, true);
-			else if ($type == NBT::TAG_Int) $gamerules[$rule] = new IntGameRule($value, true);
-			else if ($type == NBT::TAG_Float) $gamerules[$rule] = new FloatGameRule($value, true);
-			else throw new Exception("Unexpected tag type for game rule: " . $rule . ", got type: " . $type);
-		}
-		return $gamerules;
+		return $this->gameRules;
 	}
 
-	public function getGameRule(string $rule): bool|int|float
+	public function getGameRule(string $rule): bool|int|float|null
 	{
-		$worldData = $this->provider->getWorldData();
-		return $worldData->getGameRule($rule);
+		if (!isset($this->gameRules[$rule])) return null;
+		return $this->gameRules[$rule]->getValue();
 	}
 
-	public function setGameRule(string $rule, bool|int|float $value): void
+	public function setGameRule(string $rule, mixed $value): bool
 	{
-		$worldData = $this->provider->getWorldData();
-		$worldData->setGameRule($rule, $value);
+		if (!isset($this->gameRules[$rule])) return false;
+		$type = GameRules::TYPES[$rule];
+		if ($type == GameRules::TYPE_BOOL) $val = (bool)$value;
+		else if ($type == GameRules::TYPE_INT) $val = (int)$value;
+		else if ($type == GameRules::TYPE_FLOAT) $val = (float)$value;
+		else return false;
+		$this->gameRules[$rule] = $val;
 		$this->broadcastGameRules();
+		return true;
 	}
 
 	public function broadcastGameRules(): void
 	{
-		$gameRules = $this->getGameRules();
 		foreach ($this->players as $player)
-			$player->getNetworkSession()->syncWorldGameRules($gameRules);
+			$player->getNetworkSession()->syncWorldGameRules($this->gameRules);
 	}
 
 	public function broadcastWeather(): void
@@ -3771,7 +3761,7 @@ class World implements ChunkManager
 		$levelSettings->rainLevel = $this->rainLevel;
 		$levelSettings->lightningLevel = $this->lightningLevel;
 		$levelSettings->commandsEnabled = true;
-		$levelSettings->gameRules = $this->getGameRules();
+		$levelSettings->gameRules = $this->gameRules;
 		$levelSettings->experiments = new Experiments([], false);
 		return $levelSettings;
 	}

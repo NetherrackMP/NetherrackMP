@@ -44,7 +44,7 @@ use pocketmine\utils\EnumTrait;
  */
 final class WoodType{
 	use EnumTrait {
-		__construct as private Enum___construct;
+		EnumTrait::__construct as private Enum___construct;
 	}
 
 	protected static function setup() : void{

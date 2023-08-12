@@ -10,8 +10,6 @@ use pocketmine\world\sound\EndPortalFrameFillSound;
 
 class EnderEye extends Item
 {
-
-
 	public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, array &$returnedItems): ItemUseResult
 	{
 		if (!$blockClicked instanceof EndPortalFrame || $blockClicked->hasEye()) return ItemUseResult::NONE();

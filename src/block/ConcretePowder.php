@@ -33,7 +33,7 @@ use pocketmine\math\Facing;
 class ConcretePowder extends Opaque implements Fallable{
 	use ColoredTrait;
 	use FallableTrait {
-		onNearbyBlockChange as protected startFalling;
+		FallableTrait::onNearbyBlockChange as protected startFalling;
 	}
 
 	public function __construct(BlockIdentifier $idInfo, string $name, BlockTypeInfo $typeInfo){

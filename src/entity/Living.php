@@ -58,6 +58,7 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 use pocketmine\player\Player;
 use pocketmine\timings\Timings;
 use pocketmine\utils\Binary;
+use pocketmine\world\GameRules;
 use pocketmine\world\sound\BurpSound;
 use pocketmine\world\sound\EntityLandSound;
 use pocketmine\world\sound\EntityLongFallSound;
@@ -833,6 +834,7 @@ abstract class Living extends Entity
 	public function onAirExpired(): void
 	{
 		$ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
+		if (!$this->getWorld()->getGameRule(GameRules::DROWNING_DAMAGE)) $ev->cancel();
 		$this->attack($ev);
 	}
 

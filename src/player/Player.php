@@ -127,6 +127,7 @@ use pocketmine\world\ChunkListenerNoOpTrait;
 use pocketmine\world\ChunkLoader;
 use pocketmine\world\ChunkTicker;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\GameRules;
 use pocketmine\world\Position;
 use pocketmine\world\sound\EntityAttackNoDamageSound;
 use pocketmine\world\sound\EntityAttackSound;
@@ -1968,10 +1969,12 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer
 		$oldItem = clone $heldItem;
 
 		$ev = new EntityDamageByEntityEvent($this, $entity, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $heldItem->getAttackPoints());
-		if (!$this->canInteract($entity->getLocation(), self::MAX_REACH_DISTANCE_ENTITY_INTERACTION)) {
+		if (!$this->getWorld()->getGameRule(GameRules::PVP)) {
+			$ev->cancel();
+		} else if (!$this->canInteract($entity->getLocation(), self::MAX_REACH_DISTANCE_ENTITY_INTERACTION)) {
 			$this->logger->debug("Cancelled attack of entity " . $entity->getId() . " due to not currently being interactable");
 			$ev->cancel();
-		} elseif ($this->isSpectator() || ($entity instanceof Player && !$this->server->getConfigGroup()->getConfigBool("pvp"))) {
+		} else if ($this->isSpectator() || ($entity instanceof Player && !$this->server->getConfigGroup()->getConfigBool("pvp"))) {
 			$ev->cancel();
 		}
 
@@ -2507,6 +2510,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer
 		$this->removeCurrentWindow();
 
 		$ev = new PlayerDeathEvent($this, $this->getDrops(), $this->getXpDropAmount(), null);
+		$ev->setKeepInventory($this->getWorld()->getGameRule(GameRules::KEEP_INVENTORY));
+		$ev->setKeepXp($this->getWorld()->getGameRule(GameRules::KEEP_INVENTORY));
+		if (!$this->getWorld()->getGameRule(GameRules::SHOW_DEATH_MESSAGES)) $ev->setDeathMessage("");
 		$ev->call();
 
 		if (!$ev->getKeepInventory()) {

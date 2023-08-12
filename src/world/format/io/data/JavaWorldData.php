@@ -29,10 +29,12 @@ use pocketmine\nbt\NbtDataException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\TreeRoot;
+use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\utils\Filesystem;
 use pocketmine\utils\Utils;
 use pocketmine\VersionInfo;
 use pocketmine\world\format\io\exception\CorruptedWorldException;
+use pocketmine\world\GameRules;
 use pocketmine\world\generator\GeneratorManager;
 use pocketmine\world\World;
 use pocketmine\world\WorldCreationOptions;
@@ -190,44 +192,14 @@ class JavaWorldData extends BaseNbtWorldData
 		$this->compoundTag->setByte(self::TAG_THUNDERING, (int)ceil($level));
 	}
 
-	// TODO: game rules for java world data?
-	public function getGameRule(string $gamerule): bool|int|float
+	public function getGameRules(): array
 	{
-		throw new Exception("Not implemented");
+		return [
+			GameRules::NATURAL_REGENERATION => new BoolGameRule(false, false) // todo
+		];
 	}
 
-	public function setGameRule(string $gamerule, float|bool|int $value): void
+	public function setGameRules(array $gameRules): void
 	{
-		throw new Exception("Not implemented");
-	}
-
-	public function getBoolGameRule(string $gamerule): bool
-	{
-		throw new Exception("Not implemented");
-	}
-
-	public function setBoolGameRule(string $gamerule, bool $value): void
-	{
-		throw new Exception("Not implemented");
-	}
-
-	public function getFloatGameRule(string $gamerule): float
-	{
-		throw new Exception("Not implemented");
-	}
-
-	public function setFloatGameRule(string $gamerule, float $value): void
-	{
-		throw new Exception("Not implemented");
-	}
-
-	public function getIntGameRule(string $gamerule): int
-	{
-		throw new Exception("Not implemented");
-	}
-
-	public function setIntGameRule(string $gamerule, int $value): void
-	{
-		throw new Exception("Not implemented");
 	}
 }

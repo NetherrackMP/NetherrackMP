@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\world\format\io\data;
 
-use Exception;
 use pocketmine\nbt\LittleEndianNbtSerializer;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\NbtDataException;
@@ -32,12 +31,17 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\TreeRoot;
+use pocketmine\network\mcpe\protocol\types\BoolGameRule;
+use pocketmine\network\mcpe\protocol\types\FloatGameRule;
+use pocketmine\network\mcpe\protocol\types\GameRule;
+use pocketmine\network\mcpe\protocol\types\IntGameRule;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Filesystem;
 use pocketmine\utils\Limits;
 use pocketmine\VersionInfo;
 use pocketmine\world\format\io\exception\CorruptedWorldException;
 use pocketmine\world\format\io\exception\UnsupportedWorldFormatException;
+use pocketmine\world\GameRules;
 use pocketmine\world\generator\Flat;
 use pocketmine\world\generator\GeneratorManager;
 use pocketmine\world\World;
@@ -85,6 +89,7 @@ class BedrockWorldData extends BaseNbtWorldData
 	private const TAG_RAIN_TIME = "rainTime";
 	private const TAG_TEXTURE_PACKS_REQUIRED = "texturePacksRequired";
 	private const TAG_LAST_OPENED_WITH_VERSION = "lastOpenedWithVersion";
+	private const TAG_COMMANDS_ENABLED = "commandsEnabled";
 
 	//private const TAG_EDU = "eduOffer";
 	//private const TAG_EDUCATION_FEATURES_ENABLED = "educationFeaturesEnabled";
@@ -95,7 +100,6 @@ class BedrockWorldData extends BaseNbtWorldData
 	private const TAG_BONUS_CHEST_SPAWNED = "bonusChestSpawned";
 
 	private const TAG_PVP = "pvp";
-	private const TAG_COMMANDS_ENABLED = "commandsEnabled";
 	private const TAG_FALL_DAMAGE = "falldamage";
 	private const TAG_FIRE_DAMAGE = "firedamage";
 	private const TAG_COMMAND_BLOCK_OUTPUT = "commandblockoutput";
@@ -125,40 +129,6 @@ class BedrockWorldData extends BaseNbtWorldData
 	private const TAG_SHOW_TAGS = "showtags";
 	private const TAG_SPAWN_RADIUS = "spawnradius";
 	private const TAG_TNT_EXPLODES = "tntexplodes";
-
-	public const GAME_RULE_TAGS = [
-		self::TAG_PVP,
-		self::TAG_COMMANDS_ENABLED,
-		self::TAG_FALL_DAMAGE,
-		self::TAG_FIRE_DAMAGE,
-		self::TAG_COMMAND_BLOCK_OUTPUT,
-		self::TAG_COMMAND_BLOCKS,
-		self::TAG_DO_DAYLIGHT_CYCLE,
-		self::TAG_DO_ENTITY_DROPS,
-		self::TAG_DO_FIRE_TICK,
-		self::TAG_DO_IMMEDIATE_RESPAWN,
-		self::TAG_DO_INSOMNIA,
-		self::TAG_DO_MOB_LOOT,
-		self::TAG_DO_MOB_SPAWNING,
-		self::TAG_DO_TILE_DROPS,
-		self::TAG_DO_WEATHER_CYCLE,
-		self::TAG_DROWNING_DAMAGE,
-		self::TAG_FREEZE_DAMAGE,
-		self::TAG_FUNCTION_COMMAND_LIMIT,
-		self::TAG_KEEP_INVENTORY,
-		self::TAG_MAX_COMMAND_CHAIN_LENGTH,
-		self::TAG_MOB_GRIEFING,
-		self::TAG_NATURAL_REGENERATION,
-		self::TAG_RANDOM_TICK_SPEED,
-		self::TAG_RESPAWN_BLOCKS_EXPLODE,
-		self::TAG_SEND_COMMAND_FEEDBACK,
-		self::TAG_SHOW_BORDER_EFFECT,
-		self::TAG_SHOW_COORDINATES,
-		self::TAG_SHOW_DEATH_MESSAGES,
-		self::TAG_SHOW_TAGS,
-		self::TAG_SPAWN_RADIUS,
-		self::TAG_TNT_EXPLODES
-	];
 
 	public static function generate(string $path, string $name, WorldCreationOptions $options): void
 	{
@@ -202,36 +172,36 @@ class BedrockWorldData extends BaseNbtWorldData
 
 			//->setByte(self::TAG_CHEATS_ENABLED, 0)
 
-			->setByte(self::TAG_BONUS_CHEST_ENABLED, 0) // todo
-			->setByte(self::TAG_COMMAND_BLOCK_OUTPUT, 1) // todo
-			->setByte(self::TAG_COMMAND_BLOCKS, 1) // todo
-			->setByte(self::TAG_DO_DAYLIGHT_CYCLE, 1) // todo
-			->setByte(self::TAG_DO_ENTITY_DROPS, 1) // todo
-			->setByte(self::TAG_DO_FIRE_TICK, 1) // todo
-			->setByte(self::TAG_DO_IMMEDIATE_RESPAWN, 0) // todo
-			->setByte(self::TAG_DO_INSOMNIA, 1) // todo
-			->setByte(self::TAG_DO_MOB_LOOT, 1) // todo
-			->setByte(self::TAG_DO_MOB_SPAWNING, 1) // todo
-			->setByte(self::TAG_DO_TILE_DROPS, 1) // todo
-			->setByte(self::TAG_DO_WEATHER_CYCLE, 1) // todo
-			->setByte(self::TAG_DROWNING_DAMAGE, 1) // todo
-			->setByte(self::TAG_FREEZE_DAMAGE, 1) // todo
-			->setInt(self::TAG_FUNCTION_COMMAND_LIMIT, 10000) // todo
-			->setByte(self::TAG_HAS_LOCKED_BEHAVIOR_PACK, 0) // todo
-			->setByte(self::TAG_HAS_LOCKED_RESOURCE_PACK, 0) // todo
-			->setByte(self::TAG_KEEP_INVENTORY, 0) // todo
-			->setInt(self::TAG_MAX_COMMAND_CHAIN_LENGTH, 65535) // todo
-			->setByte(self::TAG_MOB_GRIEFING, 1) // todo
-			->setByte(self::TAG_NATURAL_REGENERATION, 1) // todo
-			->setInt(self::TAG_RANDOM_TICK_SPEED, 3) // todo
+			->setByte(self::TAG_BONUS_CHEST_ENABLED, 0)
+			->setByte(self::TAG_COMMAND_BLOCK_OUTPUT, 1)
+			->setByte(self::TAG_COMMAND_BLOCKS, 1)
+			->setByte(self::TAG_DO_DAYLIGHT_CYCLE, 1)
+			->setByte(self::TAG_DO_ENTITY_DROPS, 1)
+			->setByte(self::TAG_DO_FIRE_TICK, 1)
+			->setByte(self::TAG_DO_IMMEDIATE_RESPAWN, 0)
+			->setByte(self::TAG_DO_INSOMNIA, 1)
+			->setByte(self::TAG_DO_MOB_LOOT, 1)
+			->setByte(self::TAG_DO_MOB_SPAWNING, 1)
+			->setByte(self::TAG_DO_TILE_DROPS, 1)
+			->setByte(self::TAG_DO_WEATHER_CYCLE, 1)
+			->setByte(self::TAG_DROWNING_DAMAGE, 1)
+			->setByte(self::TAG_FREEZE_DAMAGE, 1)
+			->setInt(self::TAG_FUNCTION_COMMAND_LIMIT, 10000)
+			->setByte(self::TAG_HAS_LOCKED_BEHAVIOR_PACK, 0)
+			->setByte(self::TAG_HAS_LOCKED_RESOURCE_PACK, 0)
+			->setByte(self::TAG_KEEP_INVENTORY, 0)
+			->setInt(self::TAG_MAX_COMMAND_CHAIN_LENGTH, 65535)
+			->setByte(self::TAG_MOB_GRIEFING, 1)
+			->setByte(self::TAG_NATURAL_REGENERATION, 1)
+			->setInt(self::TAG_RANDOM_TICK_SPEED, 3)
 			->setByte(self::TAG_RESPAWN_BLOCKS_EXPLODE, 1)
 			->setByte(self::TAG_SEND_COMMAND_FEEDBACK, 1)
-			->setByte(self::TAG_SHOW_BORDER_EFFECT, 1) // todo: figure out what this is?
-			->setByte(self::TAG_SHOW_COORDINATES, 0) // todo
-			->setByte(self::TAG_SHOW_DEATH_MESSAGES, 1) // todo
-			->setByte(self::TAG_SHOW_TAGS, 1) // todo
-			->setInt(self::TAG_SPAWN_RADIUS, 32) // todo
-			->setByte(self::TAG_TNT_EXPLODES, 1) // todo
+			->setByte(self::TAG_SHOW_BORDER_EFFECT, 1) // figure out what this is?
+			->setByte(self::TAG_SHOW_COORDINATES, 0)
+			->setByte(self::TAG_SHOW_DEATH_MESSAGES, 1)
+			->setByte(self::TAG_SHOW_TAGS, 1)
+			->setInt(self::TAG_SPAWN_RADIUS, 32)
+			->setByte(self::TAG_TNT_EXPLODES, 1)
 
 			// custom
 			->setString(self::TAG_GENERATOR_NAME, GeneratorManager::getInstance()->getGeneratorName($options->getGeneratorClass()))
@@ -372,76 +342,30 @@ class BedrockWorldData extends BaseNbtWorldData
 		$this->compoundTag->setFloat(self::TAG_LIGHTNING_LEVEL, $level);
 	}
 
-	/** @noinspection PhpUnhandledExceptionInspection */
-	private function getGameRuleTagName(string $gamerule): string
+	public function getGameRules(): array
 	{
-		$gamerule = strtolower($gamerule);
-		if ($gamerule == "commandsenabled") return "commandsEnabled";
-		if (!in_array($gamerule, self::GAME_RULE_TAGS)) throw new Exception("Invalid game rule: " . $gamerule);
-		return $gamerule;
-	}
-
-	/** @noinspection PhpUnhandledExceptionInspection */
-	public function getGameRule(string $gamerule): bool|int|float
-	{
-		$tag = $this->compoundTag->getTag($this->getGameRuleTagName($gamerule));
-		$value = $tag->getValue();
-		if ($tag->getType() == NBT::TAG_Byte) return $value == 1;
-		return $value;
-	}
-
-	/** @noinspection PhpUnhandledExceptionInspection */
-	public function setGameRule(string $gamerule, bool|int|float $value): void
-	{
-		$tag = $this->compoundTag->getTag($gamerule = $this->getGameRuleTagName($gamerule));
-		if ($tag->getType() == NBT::TAG_Byte) {
-			$this->compoundTag->setByte($gamerule, (int)((bool)$value));
-		} else if ($tag->getType() == NBT::TAG_Int) {
-			$this->compoundTag->setInt($gamerule, (int)$value);
-		} else if ($tag->getType() == NBT::TAG_Float) {
-			$this->compoundTag->setFloat($gamerule, (float)$value);
+		$gameRules = [
+			GameRules::NATURAL_REGENERATION => new BoolGameRule(false, false)
+		];
+		foreach (array_keys(GameRules::TYPES) as $rule) {
+			if (isset($gameRules[$rule])) continue;
+			$tag = $this->compoundTag->getTag($rule);
+			if (is_null($tag)) continue;
+			$type = $tag->getType();
+			$value = $tag->getValue();
+			if ($type == NBT::TAG_Byte) $gameRules[$rule] = new BoolGameRule($value == 1, true);
+			else if ($type == NBT::TAG_Int) $gameRules[$rule] = new IntGameRule($value, true);
+			else if ($type == NBT::TAG_Float) $gameRules[$rule] = new FloatGameRule($value, true);
 		}
+		return $gameRules;
 	}
 
-	/** @noinspection PhpUnhandledExceptionInspection */
-	public function getBoolGameRule(string $gamerule): bool
+	public function setGameRules(array $gameRules): void
 	{
-		$gamerule = $this->getGameRuleTagName($gamerule);
-		return $this->compoundTag->getByte($gamerule) == 1;
-	}
-
-	/** @noinspection PhpUnhandledExceptionInspection */
-	public function setBoolGameRule(string $gamerule, bool $value): void
-	{
-		$gamerule = $this->getGameRuleTagName($gamerule);
-		$this->compoundTag->setByte($gamerule, (int)$value);
-	}
-
-	/** @noinspection PhpUnhandledExceptionInspection */
-	public function getFloatGameRule(string $gamerule): float
-	{
-		$gamerule = $this->getGameRuleTagName($gamerule);
-		return $this->compoundTag->getFloat($gamerule);
-	}
-
-	/** @noinspection PhpUnhandledExceptionInspection */
-	public function setFloatGameRule(string $gamerule, float $value): void
-	{
-		$gamerule = $this->getGameRuleTagName($gamerule);
-		$this->compoundTag->setFloat($gamerule, $value);
-	}
-
-	/** @noinspection PhpUnhandledExceptionInspection */
-	public function getIntGameRule(string $gamerule): int
-	{
-		$gamerule = $this->getGameRuleTagName($gamerule);
-		return $this->compoundTag->getInt($gamerule);
-	}
-
-	/** @noinspection PhpUnhandledExceptionInspection */
-	public function setIntGameRule(string $gamerule, int $value): void
-	{
-		$gamerule = $this->getGameRuleTagName($gamerule);
-		$this->compoundTag->setInt($gamerule, $value);
+		foreach ($gameRules as $name => $rule) {
+			if ($rule instanceof BoolGameRule) $this->compoundTag->setByte($name, $rule->getValue() ? 1 : 0);
+			else if ($rule instanceof IntGameRule) $this->compoundTag->setInt($name, $rule->getValue());
+			else if ($rule instanceof FloatGameRule) $this->compoundTag->setFloat($name, $rule->getValue());
+		}
 	}
 }

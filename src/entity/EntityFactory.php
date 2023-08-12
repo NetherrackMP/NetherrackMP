@@ -23,15 +23,18 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use Closure;
 use DaveRandom\CallbackValidator\CallbackType;
 use DaveRandom\CallbackValidator\ParameterType;
 use DaveRandom\CallbackValidator\ReturnType;
+use InvalidArgumentException;
 use pocketmine\block\RuntimeBlockStateRegistry;
 use pocketmine\data\bedrock\LegacyEntityIdToStringIdMap;
 use pocketmine\data\bedrock\PotionTypeIdMap;
 use pocketmine\data\bedrock\PotionTypeIds;
 use pocketmine\data\SavedDataLoadingException;
 use pocketmine\entity\EntityDataHelper as Helper;
+use pocketmine\entity\object\Boat;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\object\FallingBlock;
 use pocketmine\entity\object\FireworkRocket;
@@ -73,7 +76,7 @@ final class EntityFactory
 	public const TAG_LEGACY_ID = "id"; //TAG_Int
 
 	/**
-	 * @var \Closure[] save ID => creator function
+	 * @var Closure[] save ID => creator function
 	 * @phpstan-var array<int|string, \Closure(World, CompoundTag) : Entity>
 	 */
 	private array $creationFuncs = [];
@@ -171,7 +174,11 @@ final class EntityFactory
 
 		$this->register(FireworkRocket::class, static function (World $world, CompoundTag $nbt): FireworkRocket {
 			return new FireworkRocket(EntityDataHelper::parseLocation($nbt, $world), Item::nbtDeserialize($nbt->getCompoundTag("Item")));
-		}, ["minecraft:fireworks","Fireworks"]);
+		}, ["minecraft:fireworks", "Fireworks"]);
+
+		$this->register(Boat::class, static function (World $world, CompoundTag $nbt): Boat {
+			return new Boat(EntityDataHelper::parseLocation($nbt, $world), $nbt);
+		}, ["minecraft:boat", "Boat"]);
 
 		foreach (VanillaItems::SPAWN_ITEMS as $name => $class)
 			$this->register($class, function (World $world, CompoundTag $nbt) use ($class): Entity {
@@ -190,12 +197,12 @@ final class EntityFactory
 	 *
 	 * NOTE: The first save name in the $saveNames array will be used when saving the entity to disk.
 	 *
-	 * @throws \InvalidArgumentException
+	 * @throws InvalidArgumentException
 	 */
-	public function register(string $className, \Closure $creationFunc, array $saveNames): void
+	public function register(string $className, Closure $creationFunc, array $saveNames): void
 	{
 		if (count($saveNames) === 0) {
-			throw new \InvalidArgumentException("At least one save name must be provided");
+			throw new InvalidArgumentException("At least one save name must be provided");
 		}
 		Utils::testValidInstance($className, Entity::class);
 		Utils::validateCallableSignature(new CallbackType(
@@ -245,7 +252,7 @@ final class EntityFactory
 		if (isset($this->saveNames[$class])) {
 			$saveData->setTag(self::TAG_IDENTIFIER, new StringTag($this->saveNames[$class]));
 		} else {
-			throw new \InvalidArgumentException("Entity $class is not registered");
+			throw new InvalidArgumentException("Entity $class is not registered");
 		}
 	}
 
@@ -257,6 +264,6 @@ final class EntityFactory
 		if (isset($this->saveNames[$class])) {
 			return $this->saveNames[$class];
 		}
-		throw new \InvalidArgumentException("Entity $class is not registered");
+		throw new InvalidArgumentException("Entity $class is not registered");
 	}
 }

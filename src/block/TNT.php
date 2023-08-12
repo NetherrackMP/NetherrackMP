@@ -36,55 +36,69 @@ use pocketmine\math\RayTraceResult;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\utils\Random;
+use pocketmine\world\GameRules;
 use pocketmine\world\sound\IgniteSound;
 use function cos;
 use function sin;
 use const M_PI;
 
-class TNT extends Opaque{
+class TNT extends Opaque
+{
 	protected bool $unstable = false; //TODO: Usage unclear, seems to be a weird hack in vanilla
 	protected bool $worksUnderwater = false;
 
-	public function describeBlockItemState(RuntimeDataDescriber $w) : void{
+	public function describeBlockItemState(RuntimeDataDescriber $w): void
+	{
 		$w->bool($this->worksUnderwater);
 	}
 
-	protected function describeBlockOnlyState(RuntimeDataDescriber $w) : void{
+	protected function describeBlockOnlyState(RuntimeDataDescriber $w): void
+	{
 		$w->bool($this->unstable);
 	}
 
-	public function isUnstable() : bool{ return $this->unstable; }
+	public function isUnstable(): bool
+	{
+		return $this->unstable;
+	}
 
 	/** @return $this */
-	public function setUnstable(bool $unstable) : self{
+	public function setUnstable(bool $unstable): self
+	{
 		$this->unstable = $unstable;
 		return $this;
 	}
 
-	public function worksUnderwater() : bool{ return $this->worksUnderwater; }
+	public function worksUnderwater(): bool
+	{
+		return $this->worksUnderwater;
+	}
 
 	/** @return $this */
-	public function setWorksUnderwater(bool $worksUnderwater) : self{
+	public function setWorksUnderwater(bool $worksUnderwater): self
+	{
 		$this->worksUnderwater = $worksUnderwater;
 		return $this;
 	}
 
-	public function onBreak(Item $item, ?Player $player = null, array &$returnedItems = []) : bool{
-		if($this->unstable){
+	public function onBreak(Item $item, ?Player $player = null, array &$returnedItems = []): bool
+	{
+		if ($this->unstable) {
 			$this->ignite();
 			return true;
 		}
 		return parent::onBreak($item, $player, $returnedItems);
 	}
 
-	public function onInteract(Item $item, int $face, Vector3 $clickVector, ?Player $player = null, array &$returnedItems = []) : bool{
-		if($item->getTypeId() === ItemTypeIds::FIRE_CHARGE){
+	public function onInteract(Item $item, int $face, Vector3 $clickVector, ?Player $player = null, array &$returnedItems = []): bool
+	{
+		if ($item->getTypeId() === ItemTypeIds::FIRE_CHARGE) {
 			$item->pop();
 			$this->ignite();
 			return true;
 		}
-		if($item instanceof FlintSteel || $item->hasEnchantment(VanillaEnchantments::FIRE_ASPECT())){
-			if($item instanceof Durable){
+		if ($item instanceof FlintSteel || $item->hasEnchantment(VanillaEnchantments::FIRE_ASPECT())) {
+			if ($item instanceof Durable) {
 				$item->applyDamage(1);
 			}
 			$this->ignite();
@@ -94,8 +108,10 @@ class TNT extends Opaque{
 		return false;
 	}
 
-	public function ignite(int $fuse = 80) : void{
+	public function ignite(int $fuse = 80): void
+	{
 		$world = $this->position->getWorld();
+		if (!$world->getGameRule(GameRules::TNT_EXPLODES)) return;
 		$world->setBlock($this->position, VanillaBlocks::AIR());
 
 		$mot = (new Random())->nextSignedFloat() * M_PI * 2;
@@ -109,20 +125,24 @@ class TNT extends Opaque{
 		$tnt->broadcastSound(new IgniteSound());
 	}
 
-	public function getFlameEncouragement() : int{
+	public function getFlameEncouragement(): int
+	{
 		return 15;
 	}
 
-	public function getFlammability() : int{
+	public function getFlammability(): int
+	{
 		return 100;
 	}
 
-	public function onIncinerate() : void{
+	public function onIncinerate(): void
+	{
 		$this->ignite();
 	}
 
-	public function onProjectileHit(Projectile $projectile, RayTraceResult $hitResult) : void{
-		if($projectile->isOnFire()){
+	public function onProjectileHit(Projectile $projectile, RayTraceResult $hitResult): void
+	{
+		if ($projectile->isOnFire()) {
 			$this->ignite();
 		}
 	}

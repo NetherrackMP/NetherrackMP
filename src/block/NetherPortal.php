@@ -97,6 +97,7 @@ class NetherPortal extends Transparent
 	{
 		$world = $entity->getWorld();
 		$ev = new EntityPortalEnterEvent($entity, $world->getFolderName() . "_nether", EntityPortalEnterEvent::TYPE_NETHER);
+		$ev->call();
 		if ($ev->isCancelled()) return false;
 		$endWorld = $world->getServer()->getWorldManager()->getWorldByName($ev->getTargetWorldName());
 		if ($endWorld instanceof World) {

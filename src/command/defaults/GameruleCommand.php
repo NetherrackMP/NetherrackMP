@@ -30,6 +30,7 @@ use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
+use pocketmine\world\GameRules;
 use function count;
 use function memory_get_usage;
 use function number_format;
@@ -73,9 +74,20 @@ class GameruleCommand extends VanillaCommand
 							KnownTranslationFactory::pocketmine_command_gamerule_success_more($rule, $got, $world->getDisplayName())
 					);
 				} else {
-					if ($set == "true" || $set == "false") $set = $set == "true";
-					else if (is_numeric($set)) $set = str_contains($set, ".") ? (float)$set : (int)$set;
-					else throw new InvalidCommandSyntaxException();
+					$expectedType = GameRules::TYPES[$rule] ?? null;
+					if (is_null($expectedType)) throw new InvalidCommandSyntaxException();
+					if ($expectedType == GameRules::TYPE_BOOL) {
+						if ($set != "true" && $set != "false") throw new InvalidCommandSyntaxException();
+						$set = $set == "true";
+					}
+					if ($expectedType == GameRules::TYPE_FLOAT) {
+						if (!is_numeric($set) || !str_contains($set, ".")) throw new InvalidCommandSyntaxException();
+						$set = (float)$set;
+					}
+					if ($expectedType == GameRules::TYPE_INT) {
+						if (!is_numeric($set)) throw new InvalidCommandSyntaxException();
+						$set = (int)$set;
+					}
 					$world->setGameRule($rule, $set);
 					if (is_bool($set)) $set = $set ? "true" : "false";
 					$sender->sendMessage(

@@ -54,25 +54,7 @@ class TimeCommand extends VanillaCommand{
 			throw new InvalidCommandSyntaxException();
 		}
 
-		if($args[0] === "start"){
-			if(!$this->testPermission($sender, DefaultPermissionNames::COMMAND_TIME_START)){
-				return true;
-			}
-			foreach($sender->getServer()->getWorldManager()->getWorlds() as $world){
-				$world->startTime();
-			}
-			Command::broadcastCommandMessage($sender, "Restarted the time");
-			return true;
-		}elseif($args[0] === "stop"){
-			if(!$this->testPermission($sender, DefaultPermissionNames::COMMAND_TIME_STOP)){
-				return true;
-			}
-			foreach($sender->getServer()->getWorldManager()->getWorlds() as $world){
-				$world->stopTime();
-			}
-			Command::broadcastCommandMessage($sender, "Stopped the time");
-			return true;
-		}elseif($args[0] === "query"){
+		if($args[0] === "query"){
 			if(!$this->testPermission($sender, DefaultPermissionNames::COMMAND_TIME_QUERY)){
 				return true;
 			}

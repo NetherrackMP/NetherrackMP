@@ -184,12 +184,11 @@ class Language
 
 	protected function internalGet(string $id): ?string
 	{
-		$got = self::$langCache[$this->langName][$id] ?? self::$langCache[self::FALLBACK_LANGUAGE][$id] ?? null;
-		$tk = "§lNot translated: {$id}§r ";
-		if (is_string($got) && str_starts_with($got, $tk)) {
-			$got = substr($got, strlen($tk));
-		}
-		return $got;
+		$got = self::$langCache[$this->langName][$id] ?? null;
+		$def = self::$langCache[self::FALLBACK_LANGUAGE][$id] ?? null;
+		$tk = "§lNot translated: " . $id . "§r ";
+		if (is_string($got) && str_starts_with($got, $tk)) return $def;
+		return $got ?? $def;
 	}
 
 	public function get(string $id): string

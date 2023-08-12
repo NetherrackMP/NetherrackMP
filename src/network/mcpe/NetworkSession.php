@@ -88,6 +88,7 @@ use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\network\mcpe\protocol\types\command\CommandPermissions;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\FloatGameRule;
+use pocketmine\network\mcpe\protocol\types\GameRule;
 use pocketmine\network\mcpe\protocol\types\IntGameRule;
 use pocketmine\network\mcpe\protocol\types\LevelEvent;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
@@ -338,9 +339,7 @@ class NetworkSession
 	{
 		if ($this->connected) { //TODO: this is fine since we can't handle anything from a disconnected session, but it might produce surprises in some cases
 			$this->handler = $handler;
-			if ($this->handler !== null) {
-				$this->handler->setUp();
-			}
+			$this->handler?->setUp();
 		}
 	}
 
@@ -1180,7 +1179,7 @@ class NetworkSession
 		foreach ($pks as $pk) $this->sendDataPacket($pk);
 	}
 
-	/*** @param (BoolGameRule | IntGameRule | FloatGameRule)[] $gameRules */
+	/*** @param GameRule[] $gameRules */
 	public function syncWorldGameRules(array $gameRules): void
 	{
 		$pk = new GameRulesChangedPacket();

@@ -55,6 +55,7 @@ class EndPortalFrame extends Opaque
 
 	public static function tryCreatingPortal(Position $pos): void
 	{
+        // todo
 		for ($i = 0; $i < 4; ++$i) {
 			for ($j = -1; $j <= 1; ++$j) {
 				$center = $pos->getSide(self::SIDES[$i], 2)->getSide(self::SIDES[($i + 1) % 4], $j);
